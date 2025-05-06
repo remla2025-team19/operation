@@ -1,13 +1,13 @@
 name: remla2025-team19
 services:
     app:
-        image: ghcr.io/remla2025-team19/app-service:0.0.11
+        image: ghcr.io/remla2025-team19/app-service:0.0.12
         ports:
             - "8080:8080"
         depends_on:
             - model
         environment:
-            - MODEL_SERVICE_URL=http://model:3000
+            - MODEL_SERVICE_URL=http://model:8080
     model:
         image: ghcr.io/remla2025-team19/model-service:0.0.5
         ports:
