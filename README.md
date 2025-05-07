@@ -22,7 +22,7 @@ Simply execute the command:
 docker compose up
 ```
 
-This will start the web application, after which you can send your queries.
+This will start the web application, after which you can send your queries to https://localhost:8080
 
 # Major tasks to be completed, refined
 
