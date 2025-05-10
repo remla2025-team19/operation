@@ -1,7 +1,7 @@
 - name: Set version facts
   set_fact:
     k8s_ver: "1.32.4-1.1"              
-# Install container runtime
+
 - name: Install containerd + runc
   apt:
     name:
@@ -10,13 +10,13 @@
     state: present
     update_cache: yes
   notify: restart containerd
-# Enable containerd
+
 - name: Enable and start containerd
   systemd:
     name: containerd
     enabled: yes
     state: started
-# Install Kubernetes tools
+
 - name: Install kubelet, kubeadm, kubectl
   apt:
     name:
@@ -25,7 +25,7 @@
       - "kubectl={{ k8s_ver }}"
     state: present
     update_cache: yes
-# Hold K8s packages at the desired version
+
 - name: Hold Kubernetes packages at {{ k8s_ver }}
   dpkg_selections:
     name: "{{ item }}"

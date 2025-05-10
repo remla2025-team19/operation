@@ -8,7 +8,6 @@
     group: root
     mode: '0644'
 
-# (6) Load br_netfilter immediately
 - name: Load br_netfilter module now
   community.general.modprobe:
     name: br_netfilter

@@ -3,6 +3,7 @@
     name: gnupg
     state: present
     update_cache: yes
+
 - name: Download Kubernetes signing key (ASCII)
   get_url:
     url: https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key
@@ -10,6 +11,7 @@
     mode: '0644'
     force: yes
   register: k8s_key
+
 - name: Convert key to binary .gpg (de-armor)
   command: >
     gpg --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg
@@ -17,6 +19,7 @@
   args:
     creates: /usr/share/keyrings/kubernetes-archive-keyring.gpg
   when: k8s_key.changed     # run only when the ASC file updates
+
 - name: Add Kubernetes APT repository
   apt_repository:
     repo: >
@@ -24,6 +27,7 @@
       https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /
     filename: kubernetes
     state: present
+
 - name: Refresh APT cache
   apt:
     update_cache: yes

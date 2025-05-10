@@ -5,6 +5,7 @@
     owner: vagrant
     group: vagrant
     mode: '0700'
+
 - name: Add public keys to authorized_keys
   ansible.posix.authorized_key:
     user: vagrant

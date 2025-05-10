@@ -16,7 +16,7 @@ Vagrant.configure("2") do |config|
     ctrl.vm.hostname = "ctrl"
     ctrl.vm.network "private_network", ip: "192.168.56.100"
     ctrl.vm.provider "virtualbox" do |vb|
-      vb.cpus = 1
+      vb.cpus = 2
       vb.memory = 4096
     end
     ctrl.vm.provision "ansible" do |ansible|

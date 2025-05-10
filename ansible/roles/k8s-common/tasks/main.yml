@@ -7,3 +7,24 @@
 - import_tasks: 10-k8s-tools.yml
 - import_tasks: 11-configure-containerd.yml
 - import_tasks: 12-start-kubelet.yml
+
+- name: Initialize control plane
+  include_tasks: 13-init-cluster.yml
+  when: inventory_hostname == 'ctrl' # only run on ctrl VM
+
+- name: Setup kubectl for host
+  include_tasks: 14-setup-kubectl.yml
+  when: inventory_hostname == 'ctrl' # only run on ctrl VM
+
+- name: Create Pod network
+  include_tasks: 15-create-pod-network.yml
+  when: inventory_hostname == 'ctrl'
+
+- name: Install Helm
+  include_tasks: 16-install-helm.yml
+  when: inventory_hostname == 'ctrl'
+
+- name: Install Helm Diff plugin
+  include_tasks: 17-helm-plugin.yml
+  when: inventory_hostname == 'ctrl'
+

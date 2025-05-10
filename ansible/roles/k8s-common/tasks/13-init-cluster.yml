@@ -1,0 +1,34 @@
+- name: Check if /etc/kubernetes/admin.conf exists
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: admin_conf
+
+- name: Initialize Kubernetes control plane
+  command: >
+    kubeadm init
+      --apiserver-advertise-address=192.168.56.100
+      --node-name=ctrl
+      --pod-network-cidr=10.244.0.0/16
+  args:
+    creates: /etc/kubernetes/admin.conf
+  when: not admin_conf.stat.exists
+  register: kubeadm_init
+
+- name: Create .kube directory for vagrant user
+  file:
+    path: /home/vagrant/.kube
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: '0755'
+  when: kubeadm_init.changed or not admin_conf.stat.exists
+
+- name: Copy admin.conf to vagrant user's kubeconfig
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/vagrant/.kube/config
+    remote_src: yes
+    owner: vagrant
+    group: vagrant
+    mode: '0644'
+  when: kubeadm_init.changed or not admin_conf.stat.exists

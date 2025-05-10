@@ -4,12 +4,14 @@
     value: '1'
     state: present
     reload: yes
+
 - name: Enable net.bridge.bridge-nf-call-iptables
   ansible.posix.sysctl:
     name: net.bridge.bridge-nf-call-iptables
     value: '1'
     state: present
     reload: yes
+
 - name: Enable net.bridge.bridge-nf-call-ip6tables
   ansible.posix.sysctl:
     name: net.bridge.bridge-nf-call-ip6tables
