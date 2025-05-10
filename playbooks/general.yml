@@ -5,7 +5,7 @@
     # Step 4
     - name: Set authorized key for user ubuntu copying it from current user
       ansible.posix.authorized_key:
-        user: ubuntu
+        user: vagrant
         state: present
         key: "{{ lookup('file', item) }}"
       with_fileglob:
