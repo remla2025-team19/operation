@@ -1,0 +1,15 @@
+- name: Ensure br_netfilter and overlay modules are loaded on boot
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      overlay
+      br_netfilter
+    owner: root
+    group: root
+    mode: '0644'
+
+# (6) Load br_netfilter immediately
+- name: Load br_netfilter module now
+  community.general.modprobe:
+    name: br_netfilter
+    state: present

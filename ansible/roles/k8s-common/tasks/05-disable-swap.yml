@@ -1,0 +1,7 @@
+- name: Disable swap (runtime)
+  ansible.builtin.shell: swapoff -a
+- name: Remove swap entry from /etc/fstab (persist on reboot)
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^([^#].*\s+swap\s+)'
+    state: absent
