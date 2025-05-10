@@ -3,7 +3,7 @@
   become: true
   tasks:
     # Step 4
-    - name: Set authorized key for user ubuntu copying it from current user
+    - name: Set authorized key for user vagrant copying it from current user
       ansible.posix.authorized_key:
         user: vagrant
         state: present
