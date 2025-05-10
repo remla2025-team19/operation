@@ -1,0 +1,18 @@
+127.0.0.1 localhost
+::1       localhost ip6-localhost ip6-loopback
+
+# The following lines are desirable for IPv6 capable hosts
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+# BEGIN ANSIBLE MANAGED BLOCK (general.yml - Step 8)
+# Control Node
+192.168.56.100 ctrl
+
+# Worker Nodes
+{% for i in range(1, WORKER_NODES | int + 1) %}
+192.168.56.{{ 100 + i }} node-{{ i }}
+{% endfor %}
+# END ANSIBLE MANAGED BLOCK
