@@ -1,0 +1,3 @@
+ansible/ssh_keys/
+.vagrant/
+ansible/kubeconfig/
