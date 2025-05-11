@@ -1,0 +1,2 @@
+- hosts: node-1, node-2
+  tasks: 

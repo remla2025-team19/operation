@@ -1,0 +1,18 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: Step "4.1:" Create directory for SSH keys
+      file:
+        path: /home/vagrant/.ssh
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: '0700'
+
+    - name: Step "4.2:" Add SSH public keys
+      authorized_key:
+        user: vagrant
+        key: "{{lookup('file', item) }}"
+        state: present
+      with_fileglob:
+        - "ssh_keys/*.pub"
