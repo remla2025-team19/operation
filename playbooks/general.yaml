@@ -1,7 +1,7 @@
 - hosts: all
   become: yes
   tasks:
-    - name: Step "4.1:" Create directory for SSH keys
+    - name: "Step 4.1: Create directory for SSH keys"
       file:
         path: /home/vagrant/.ssh
         state: directory
@@ -9,10 +9,192 @@
         group: vagrant
         mode: '0700'
 
-    - name: Step "4.2:" Add SSH public keys
+    - name: "Step 4.2: Add SSH public keys"
       authorized_key:
         user: vagrant
         key: "{{lookup('file', item) }}"
         state: present
       with_fileglob:
         - "ssh_keys/*.pub"
+         
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+    
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - software-properties-common
+        state: present
+
+    - name: "Step 5.1: Disable swap"
+      command: swapoff -a
+      changed_when: false
+
+    - name: "Step 5.2: Remove swap entry from fstab"
+      replace: 
+        path: /etc/fstab
+        regexp: '^([^#].*\sswap\s+.*)$'
+        replace: '#\1'
+    
+    - name: "Step 6.1: Load overlay and br_netfilter kernel modules."
+      modprobe:
+        name: "{{item}}"
+        state: present
+      with_items:
+        - overlay
+        - br_netfilter
+
+    - name: "Step 6.2: Ensure /etc/modules-load.d directory exists"
+      file:
+        path: /etc/modules-load.d
+        state: directory
+        mode: '0755'
+
+    - name: "Step 6.3: Configure overlay and br_netfilter modules to load at boot"
+      copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          overlay
+          br_netfilter
+        mode: '0644'
+
+    - name: "Step 7: Enable IPv4 forwarding and bridge-nf sysctls"
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: yes
+      with_items:
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+        - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+        - { name: 'net.ipv4.ip_forward', value: '1' }
+
+    - name: "Step 8: Set hostname resolution in /etc/hosts"
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item.ip }} {{ item.hostname }}"
+        state: present
+      with_items:
+        - { ip: '192.168.56.100', hostname: 'ctrl' }
+        - { ip: '192.168.56.101', hostname: 'node-1' }
+        - { ip: '192.168.56.102', hostname: 'node-2' }
+        
+    - name: " Step 9.0: Create directory for APT keyrings"
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+
+    # It seems dearmoring of the key is needed for adding the repository in 9.2. Conventional get_url will not provide the public key
+    - name: "Step 9.1: Add Kubernetes signing key"
+      shell: |
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | 
+        sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+
+    - name: "Step 9.2: Add K8s repository"
+      apt_repository: 
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /"
+        state: present
+        filename: kubernetes
+
+    - name: Update apt cache after adding repositories
+      apt:
+        update_cache: yes
+
+    - name: "Step 9.3: Ensure legacy Kubernetes repo is absent"
+      apt_repository:
+        repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+        state: absent
+        filename: kubernetes-legacy
+
+    - name: "Add Docker GPG key for containerd"
+      shell: |
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | 
+        sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: "Add Docker repository for containerd"
+      apt_repository:
+        repo: "deb [arch=amd64, signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  noble stable"
+        state: present
+        filename: docker
+
+
+    # Experiments: 1.7.24-1 can be installed via docker
+    # runc version 1.1.12-0ubuntu3
+    # kubelet, kubeadm, kubectl give errors for 1.32.4-00
+    - name: "Step 10: Install K8s tools"
+      apt:
+        name:
+          # Normal installation gives error for 1.7.24, hence installig via docker
+          - containerd.io
+          # containerd.io installation includes runc
+          # - runc
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+        update_cache: yes
+        force_apt_get: yes
+
+    # - name: Install containerd
+    #   apt: 
+    #     name: containerd
+    #     state: present
+    #     update_cache: yes
+
+    - name: "Step 11.1: Generate default containerd config"
+      shell: containerd config default > /etc/containerd/config.toml
+      args:
+        creates: /etc/containerd/config.toml
+
+    - name: "Step 11.2: Disable AppArmor for containerd"
+      lineinfile:
+        path: /etc/containerd/config.toml
+        regexp: '^(\s+)disable_apparmor = false'
+        line: '\ldisable_apparmor = true'
+        backrefs: yes
+        state: present
+
+    - name: "Step 11.3: Set SystemdCgroup to true in containerd config"
+      lineinfile:
+        path: /etc/containerd/config.toml
+        regexp: '(\s+)SystemdCgroup = false'
+        line: '\lSystemdCgroup = true'
+        backrefs: yes
+        state: present
+  
+    - name: "Step 11.4: Update sandbox image in containerd config" 
+      lineinfile:
+        path: /etc/containerd/config.toml
+        regexp: '^(\s+)sandbox_image = ".*"'
+        line: '\1sandbox_image = "registry.k8s.io/pause:3.10"'
+        backrefs: yes
+        state: present
+
+    - name: "Step 11.5: Restart containerd"
+      systemd:
+        name: containerd
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+
+    - name: " Step 12: Enable kubelet service"
+      systemd:
+        name: kubelet
+        enabled: yes
+        daemon_reload: yes
+
