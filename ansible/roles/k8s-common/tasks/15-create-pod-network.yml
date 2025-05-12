@@ -1,0 +1,23 @@
+- name: Download Flannel
+  get_url:
+    url: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+    dest: /tmp/kube-flannel.yml
+    mode: '0644'
+  run_once: true
+
+- name: Add --iface=eth1 to the Flannel DaemonSet args
+  lineinfile:
+    path: /tmp/kube-flannel.yml
+    regexp: '^\s*- --kube-subnet-mgr'
+    insertafter: '^\s*- --kube-subnet-mgr'
+    line: '            - --iface=eth1'
+  run_once: true
+
+- name: Apply Flannel Pod network manifest
+  shell: |
+    kubectl apply \
+      --kubeconfig=/etc/kubernetes/admin.conf \
+      --validate=false \
+      -f /tmp/kube-flannel.yml
+  run_once: true
+

@@ -1,0 +1,5 @@
+- name: Install helm-diff plugin
+  command: helm plugin install https://github.com/databus23/helm-diff
+  args:
+    creates: /root/.local/share/helm/plugins/diff/plugin.yaml
+  run_once: true

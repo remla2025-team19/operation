@@ -1,0 +1,17 @@
+- name: Ensure vagrant user has SSH directory
+  file:
+    path: /home/vagrant/.ssh
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: '0700'
+
+- name: Add public keys to authorized_keys
+  ansible.posix.authorized_key:
+    user: vagrant
+    state: present
+    key: "{{ lookup('file', item) }}"
+  loop: "{{ query('fileglob', playbook_dir + '/ssh_keys/*.pub') }}"
+  when: lookup('fileglob', playbook_dir + '/ssh_keys/*.pub') | length > 0
+  # ssh vagrant@192.168.56.100  # controller
+  # ssh vagrant@192.168.56.101  # node-1
