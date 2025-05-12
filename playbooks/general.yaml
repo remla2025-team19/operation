@@ -212,26 +212,26 @@
         state: present
         timeout: 30
 
-    - name: " Step 12.1: Enable kubelet service"
+    - name: " Step 12: Enable kubelet service"
       systemd:
         name: kubelet
         enabled: yes
         daemon_reload: yes
 
 
-    # Below two steps are to ensure Step 13 will run correctly
-    - name: "Step 12.2: Ensure kubelet is started"
-      systemd:
-        name: kubelet
-        state: started
+    # # Below two steps are to ensure Step 13 will run correctly
+    # - name: "Step 12.2: Ensure kubelet is started"
+    #   systemd:
+    #     name: kubelet
+    #     state: started
         
 
-    - name: "Step 12.3: Wait for kubelet to be up"
-      command: systemctl is-active kubelet
-      register: kubelet_status
-      until: kubelet_status.stdout == "active"
-      retries: 5
-      delay: 5
-      changed_when: false
-      failed_when: false
+    # - name: "Step 12.3: Wait for kubelet to be up"
+    #   command: systemctl is-active kubelet
+    #   register: kubelet_status
+    #   until: kubelet_status.stdout == "active"
+    #   retries: 10
+    #   delay: 5
+    #   changed_when: false
+    #   failed_when: kubelet_status.stdout != "active"
 

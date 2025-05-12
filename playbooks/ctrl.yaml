@@ -1,2 +1,118 @@
 - hosts: ctrl
+  become: yes
+  vars: 
+    pod_network_cidr: "10.244.0.0/16"
+    apiserver_ip: "192.168.56.100"
+
   tasks:
+    - name: "Step 13: Initialize k8s cluster with kubeadm"
+      command: |
+        kubeadm init \
+        --apiserver-advertise-address={{ apiserver_ip }} \
+        --pod-network-cidr={{ pod_network_cidr }} \
+        --kubernetes-version=1.32.4
+      args:
+        creates: /etc/kubernetes/admin.conf
+
+      register: kubeadm_init
+      failed_when: kubeadm_init.rc != 0 and "kubelet is not running" not in kubeadm_init.stderr
+      changed_when: kubeadm_init.rc == 0
+    
+    # Create .kube directory for vagrant user
+    - name: "Step 14.0: Create .kube directory for vagrant user"
+      file:
+        path: /home/vagrant/.kube
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: '0755'
+
+    - name: "Step 14.1: Configure kubectl for vagrant user"
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/vagrant/.kube/config
+        remote_src: yes
+        owner: vagrant
+        group: vagrant
+        mode: '0644'
+
+    - name: "Step 14.2: Configure kubectl for root user"
+      fetch: 
+        src: /etc/kubernetes/admin.conf
+        dest: ./kubeconfig
+        flat: yes
+        mode: '0600'
+
+    - name: "Step 15.1: Download Flannel manifest"
+      get_url:
+        url: https://github.com/flannel-io/flannel/releases/download/v0.26.7/kube-flannel.yml
+        dest: /home/vagrant/kube-flannel-modified.yml
+        mode: '0644'
+
+    - name: "Step 15.2: Configure Flannel to use eth1 interface"
+      become: no
+      replace: 
+        path: /home/vagrant/kube-flannel-modified.yml
+        regexp: '(\s+)- --kube-subnet-mgr'
+        replace: '\1- --iface=eth1\n\1- --kube-subnet-mgr'
+
+    - name: "Step 15.3: Apply modified Flannel manifest"
+      command: kubectl apply -f /home/vagrant/kube-flannel-modified.yml
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: flannel_result
+      failed_when: flannel_result.rc != 0 and "Conflict" not in flannel_result.stderr
+      changed_when: "'created' in flannel_result.stdout"
+
+    - name: "Step 15.3.1: Show flannel result"
+      debug:
+        var: flannel_result.stdout_lines
+
+    - name: "Step 15.4: Wait for Flannel pods"
+      command: kubectl wait --for=condition=ready pod -l app=flannel -n kube-flannel --timeout=120s
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: flannel_wait_result
+      retries: 5
+      delay: 10
+      until: flannel_wait_result.rc == 0
+      ignore_errors: yes
+
+    - name: "Debug: Get all pods in kube-flannel namespace"
+      command: kubectl get pods -n kube-flannel --show-labels
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: all_pods
+      changed_when: false
+
+    - name: "Debug: Show all pod labels"
+      debug:
+        var: all_pods.stdout_lines
+
+    - name: "Step 16: Add Helm signing key"
+      shell: |
+        curl https://baltocdn.com/helm/signing.asc | 
+        sudo gpg --dearmor > /etc/apt/keyrings/helm.gpg
+      args:
+        creates: /etc/apt/keyrings/helm.gpg
+
+    - name: "Step 16.2: Add Helm repository"
+      apt_repository:
+        repo: "deb [arch=amd64, signed-by=/etc/apt/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+        state: present
+        filename: helm-stable   
+
+    - name: "Step 16.3: Install Helm"     
+      apt:
+        name: helm
+        state: present
+        update_cache: yes
+
+    - name: "Step 17: Install Helm diff plugin"
+      become: no
+      command: helm plugin install https://github.com/databus23/helm-diff
+      register: helm_diff
+      changed_when: helm_diff.rc == 0
+      failed_when:
+        - helm_diff.rc != 0
+        - '"already exists" not in helm_diff.stderr'

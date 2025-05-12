@@ -48,11 +48,11 @@ Vagrant.configure("2") do |config|
 
   # Ansible playbook for controller node
   config.vm.provision "ansible" do |a|
-    a.playbook = "playbooks/ctrl_big.yaml"
+    a.playbook = "playbooks/ctrl.yaml"
   end
 
   # Ansible playbook for worker nodes
   config.vm.provision "ansible" do |a|
-    a.playbook = "playbooks/node_big.yaml"
+    a.playbook = "playbooks/node.yaml"
   end
 end
