@@ -1,3 +1,10 @@
+- name: "Check if cluster is initialized"
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: admin_conf
+  delegate_to: ctrl
+  changed_when: false
+
 - name: Generate join command on controller
   shell: kubeadm token create --print-join-command
   register: join_command
@@ -5,5 +12,9 @@
   when: admin_conf.stat.exists
   changed_when: "'New token created' in join_command.stdout"
 
-
-  
+- name: Set join command as a global fact
+  set_fact:
+    join_command: "{{ join_command.stdout }}"
+  delegate_to: ctrl
+  delegate_facts: true
+  run_once: true

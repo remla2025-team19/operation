@@ -29,11 +29,12 @@
   when: inventory_hostname == 'ctrl'
 
 - name: Create join command
-  include_tasks: 18-join-command.yml
-  when: inventory_hostname == 'node-1,node-2' #
+  include_tasks: 18-create-join.yml
+  when: inventory_hostname != 'ctrl' #
 
 - name: Join worker nodes to the cluster
-  include_tasks: 19-join-worker.yml
-  when: inventory_hostname == 'node-1,node-2' # only run on node-1 and node-2 VMs
+  include_tasks: 19-join-clusters.yml
+  when: inventory_hostname != 'ctrl' # only run on node-1 and node-2 VMs
   vars:
     join_command: "{{ hostvars['ctrl'].join_command }}"
+
