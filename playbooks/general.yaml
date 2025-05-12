@@ -218,6 +218,49 @@
         enabled: yes
         daemon_reload: yes
 
+    # - name: "Ensure /etc/iptables directory exists to bypass firewall"
+    #   file:
+    #     path: /etc/iptables
+    #     state: directory
+    #     mode: '0755'
+
+    - name: "Install iptables-persistent for firewall rule persistence"
+      apt:
+        name: iptables-persistent
+        state: present
+        update_cache: yes
+
+    - name: "Allow K8s API and kubelet ports"
+      iptables:
+        chain: INPUT
+        destination_port: "{{ item }}"
+        jump: ACCEPT
+        protocol: tcp
+      with_items:
+        - 6443
+        - 10250
+      notify:
+        - Save iptables rules
+        - Enable netfilter-persistent
+        - Start netfilter-persistent
+    
+    
+  handlers:
+  - name: Save iptables rules
+    become: yes
+    shell: |
+      mkdir -p /etc/iptables
+      iptables-save > /etc/iptables/rules.v4
+    
+  - name: Enable netfilter-persistent
+    systemd:
+      name: netfilter-persistent
+      enabled: yes
+
+  - name: Start netfilter-persistent
+    systemd:
+      name: netfilter-persistent
+      state: started
 
     # # Below two steps are to ensure Step 13 will run correctly
     # - name: "Step 12.2: Ensure kubelet is started"

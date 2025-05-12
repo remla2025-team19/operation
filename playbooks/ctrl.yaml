@@ -11,6 +11,8 @@
         --apiserver-advertise-address={{ apiserver_ip }} \
         --pod-network-cidr={{ pod_network_cidr }} \
         --kubernetes-version=1.32.4
+        --node-name=ctrl
+    # node name is mentioned above to ensure that  server is bound to host-only interface
       args:
         creates: /etc/kubernetes/admin.conf
 

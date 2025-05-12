@@ -1,2 +1,27 @@
 - hosts: node-1, node-2
-  tasks: 
+  become: yes
+  tasks:
+    - name: "Check if cluster is initialized"
+      stat:
+        path: /etc/kubernetes/admin.conf
+      register: admin_conf
+      delegate_to: ctrl
+      changed_when: false
+
+    - name: "Step 18: Generate join command on controller"
+      shell: kubeadm token create --print-join-command
+      register: join_command
+      delegate_to: ctrl
+      when: admin_conf.stat.exists
+      changed_when: "'New token created' in join_command.stdout"
+
+    - name: "Show join commad {debug}"
+      debug:
+        var: join_command.stdout
+
+    - name: "Step 19: Run join command"
+      shell: "{{join_command.stdout}} --v=5"
+      register: join_result
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      failed_when: join_result.rc != 0 and "already exists" not in join_result.stderr
