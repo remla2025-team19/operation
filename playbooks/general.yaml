@@ -155,46 +155,83 @@
     #     state: present
     #     update_cache: yes
 
+    # By default, config exists. Hence removing it first
+    - name: "Step 11.0: Remove existing containerd config"
+      file:
+        path: /etc/containerd/config.toml
+        state: absent
+      
+
     - name: "Step 11.1: Generate default containerd config"
       shell: containerd config default > /etc/containerd/config.toml
       args:
         creates: /etc/containerd/config.toml
 
-    - name: "Step 11.2: Disable AppArmor for containerd"
+    - name: "Step 11.2: Ensure CRI plugin is enabled in containerd"
       lineinfile:
         path: /etc/containerd/config.toml
-        regexp: '^(\s+)disable_apparmor = false'
-        line: '\ldisable_apparmor = true'
+        regexp: '^disabled_plugins = \["cri"\]'
+        state: absent
+
+    # Ensure that the tabs are correct in the config file
+    - name: "Step 11.3: Disable AppArmor for containerd"
+      lineinfile:
+        path: /etc/containerd/config.toml
+        regexp: '(\s+)disable_apparmor = false'
+        line: '\1disable_apparmor = true'
         backrefs: yes
         state: present
 
-    - name: "Step 11.3: Set SystemdCgroup to true in containerd config"
+    - name: "Step 11.4: Set SystemdCgroup to true in containerd config"
       lineinfile:
         path: /etc/containerd/config.toml
         regexp: '(\s+)SystemdCgroup = false'
-        line: '\lSystemdCgroup = true'
+        line: '\1SystemdCgroup = true'
         backrefs: yes
         state: present
   
-    - name: "Step 11.4: Update sandbox image in containerd config" 
+    - name: "Step 11.5: Update sandbox image in containerd config" 
       lineinfile:
         path: /etc/containerd/config.toml
-        regexp: '^(\s+)sandbox_image = ".*"'
+        regexp: '(\s+)sandbox_image = ".*"'
         line: '\1sandbox_image = "registry.k8s.io/pause:3.10"'
         backrefs: yes
         state: present
 
-    - name: "Step 11.5: Restart containerd"
+    - name: "Step 11.6: Restart containerd"
       systemd:
         name: containerd
         state: restarted
         enabled: yes
         daemon_reload: yes
 
+    # Was getting a CRI error while running kubeadm init, so waiting for containerd socket to be up
+    - name: "Step 11.7: Wait for containerd socket to be up"
+      wait_for:
+        path: /var/run/containerd/containerd.sock
+        state: present
+        timeout: 30
 
-    - name: " Step 12: Enable kubelet service"
+    - name: " Step 12.1: Enable kubelet service"
       systemd:
         name: kubelet
         enabled: yes
         daemon_reload: yes
+
+
+    # Below two steps are to ensure Step 13 will run correctly
+    - name: "Step 12.2: Ensure kubelet is started"
+      systemd:
+        name: kubelet
+        state: started
+        
+
+    - name: "Step 12.3: Wait for kubelet to be up"
+      command: systemctl is-active kubelet
+      register: kubelet_status
+      until: kubelet_status.stdout == "active"
+      retries: 5
+      delay: 5
+      changed_when: false
+      failed_when: false
 
