@@ -1,0 +1,9 @@
+- name: Generate join command on controller
+  shell: kubeadm token create --print-join-command
+  register: join_command
+  delegate_to: ctrl
+  when: admin_conf.stat.exists
+  changed_when: "'New token created' in join_command.stdout"
+
+
+  
