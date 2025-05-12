@@ -8,9 +8,8 @@
 - name: Add --iface=eth1 to the Flannel DaemonSet args
   lineinfile:
     path: /tmp/kube-flannel.yml
-    regexp: '^\s*- --kube-subnet-mgr'
-    insertafter: '^\s*- --kube-subnet-mgr'
-    line: '            - --iface=eth1'
+    regexp: '(\s+)- --kube-subnet-mgr'
+    line: '\1- --kube-subnet-mgr\n\1- --iface=eth1'
   run_once: true
 
 - name: Apply Flannel Pod network manifest
