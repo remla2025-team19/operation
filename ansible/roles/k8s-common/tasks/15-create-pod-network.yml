@@ -10,6 +10,7 @@
     path: /tmp/kube-flannel.yml
     regexp: '(\s+)- --kube-subnet-mgr'
     line: '\1- --kube-subnet-mgr\n\1- --iface=eth1'
+    backrefs: yes
   run_once: true
 
 - name: Apply Flannel Pod network manifest

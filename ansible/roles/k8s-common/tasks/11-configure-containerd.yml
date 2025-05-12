@@ -18,6 +18,7 @@
     path: /etc/containerd/config.toml
     regexp: '(\s+)disable_apparmor = false'
     line: '\1disable_apparmor = true'
+    backrefs: yes
   notify: restart containerd
 
 - name: Update sandbox_image to pause:3.10
@@ -25,6 +26,7 @@
     path: /etc/containerd/config.toml
     regexp: '(\s+)sandbox_image = ".*"'
     line: '\1sandbox_image = "registry.k8s.io/pause:3.10"'
+    backrefs: yes
   notify: restart containerd
 
 - name: Enable SystemdCgroup
@@ -32,4 +34,5 @@
     path: /etc/containerd/config.toml
     regexp: '(\s+)SystemdCgroup = false'
     line: '\1SystemdCgroup = true'
+    backrefs: yes
   notify: restart containerd
