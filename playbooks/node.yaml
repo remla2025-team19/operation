@@ -20,7 +20,7 @@
         var: join_command.stdout
 
     - name: "Step 19: Run join command"
-      shell: "{{join_command.stdout}} --v=5"
+      shell: "{{join_command.stdout}}"
       register: join_result
       args:
         creates: /etc/kubernetes/kubelet.conf

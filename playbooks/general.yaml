@@ -233,6 +233,7 @@
     - name: "Allow K8s API and kubelet ports"
       iptables:
         chain: INPUT
+        in_interface: eth1
         destination_port: "{{ item }}"
         jump: ACCEPT
         protocol: tcp
@@ -241,9 +242,7 @@
         - 10250
       notify:
         - Save iptables rules
-        - Enable netfilter-persistent
-        - Start netfilter-persistent
-    
+        - Restart netfilter-persistent    
     
   handlers:
   - name: Save iptables rules
@@ -252,15 +251,11 @@
       mkdir -p /etc/iptables
       iptables-save > /etc/iptables/rules.v4
     
-  - name: Enable netfilter-persistent
+  - name: Restart netfilter-persistent
     systemd:
       name: netfilter-persistent
-      enabled: yes
+      state: restarted
 
-  - name: Start netfilter-persistent
-    systemd:
-      name: netfilter-persistent
-      state: started
 
     # # Below two steps are to ensure Step 13 will run correctly
     # - name: "Step 12.2: Ensure kubelet is started"
