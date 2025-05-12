@@ -1,3 +1,14 @@
 ---
 - hosts: all
   become: true
+  tasks:
+    # Step 18
+    - name: Print command to join the cluster
+      ansible.builtin.shell:
+        cmd: kubeadm token create --print-join-command
+      register: join_command
+      delegate_to: ctrl
+    # Step 19
+    - name: Join the cluster
+      ansible.builtin.shell:
+        cmd: "{{ join_command.stdout }}"
