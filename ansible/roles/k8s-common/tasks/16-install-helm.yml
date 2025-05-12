@@ -1,13 +1,13 @@
 
 - name: Download Helm GPG key (ASCII)
-  apt_repository:
-    repo: "deb https://baltocdn.com/helm/stable/debian/ all main"
+  apt_key:
+    url: https://baltocdn.com/helm/signing.asc
     state: present
-    update_cache: yes
+    
 
 - name: Add Helm APT repository
   apt_repository:
-    repo: deb https://baltocdn.com/helm/stable/debian/ all main
+    repo: "deb https://baltocdn.com/helm/stable/debian/ all main"
     filename: helm
     state: present
 
