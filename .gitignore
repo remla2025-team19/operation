@@ -1,3 +1,2 @@
 .vagrant/
-ansible/ssh_keys/sam.pub
-kubeconfig/
+ansible/kubeconfig/
