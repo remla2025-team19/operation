@@ -1,8 +1,8 @@
-- name: Set version facts
+- name: "Step 10.1: Set version facts"
   set_fact:
     k8s_ver: "1.32.4-1.1"              
 
-- name: Install containerd + runc
+- name: "Step 10.2: Install containerd + runc"
   apt:
     name:
       - containerd
@@ -11,13 +11,13 @@
     update_cache: yes
   notify: restart containerd
 
-- name: Enable and start containerd
+- name: "Step 10.3 Enable and start containerd"
   systemd:
     name: containerd
     enabled: yes
     state: started
 
-- name: Install kubelet, kubeadm, kubectl
+- name: "Step 10.4: Install kubelet, kubeadm, kubectl"
   apt:
     name:
       - "kubelet={{ k8s_ver }}"
@@ -26,7 +26,7 @@
     state: present
     update_cache: yes
 
-- name: Hold Kubernetes packages at {{ k8s_ver }}
+- name: "Step 10.5: Hold Kubernetes packages at {{ k8s_ver }}"
   dpkg_selections:
     name: "{{ item }}"
     selection: hold

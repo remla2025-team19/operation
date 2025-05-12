@@ -1,17 +1,17 @@
 
-- name: Download Helm GPG key (ASCII)
+- name: "Step 16.1: Download Helm GPG key (ASCII)"
   apt_key:
     url: https://baltocdn.com/helm/signing.asc
     state: present
     
 
-- name: Add Helm APT repository
+- name: "Step 16.2: Add Helm APT repository"
   apt_repository:
     repo: "deb https://baltocdn.com/helm/stable/debian/ all main"
     filename: helm
     state: present
 
-- name: Install Helm package
+- name: "Step 16.3: Install Helm package"
   apt:
     name: helm
     state: present

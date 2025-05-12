@@ -1,4 +1,4 @@
-- name: Install helm-diff plugin\
+- name: "Step 17: Install helm-diff plugin"
   become: no
   command: helm plugin install https://github.com/databus23/helm-diff
   register: helm_diff_plugin

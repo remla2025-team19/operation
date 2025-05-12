@@ -1,9 +1,9 @@
-- name: Check if /etc/kubernetes/admin.conf exists
+- name: "Step 13.1: Check if /etc/kubernetes/admin.conf exists"
   stat:
     path: /etc/kubernetes/admin.conf
   register: admin_conf
 
-- name: Initialize Kubernetes control plane
+- name: "Step 13.2: Initialize Kubernetes control plane"
   command: >
     kubeadm init
       --apiserver-advertise-address=192.168.56.100
@@ -14,7 +14,7 @@
   when: not admin_conf.stat.exists
   register: kubeadm_init
 
-- name: Create .kube directory for vagrant user
+- name: "Step 13.3: Create .kube directory for vagrant user"
   file:
     path: /home/vagrant/.kube
     state: directory
@@ -23,7 +23,7 @@
     mode: '0755'
   when: kubeadm_init.changed or not admin_conf.stat.exists
 
-- name: Copy admin.conf to vagrant user's kubeconfig
+- name: "Step 13.4: Copy admin.conf to vagrant user's kubeconfig"
   copy:
     src: /etc/kubernetes/admin.conf
     dest: /home/vagrant/.kube/config

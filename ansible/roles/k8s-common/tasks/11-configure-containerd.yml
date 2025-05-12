@@ -1,4 +1,4 @@
-- name: Ensure /etc/containerd directory exists
+- name: "Step 11.1: Ensure /etc/containerd directory exists"
   file:
     path: /etc/containerd
     state: directory
@@ -6,14 +6,14 @@
     group: root
     mode: '0755'
 
-- name: Generate default /etc/containerd/config.toml if missing
+- name: "Step 11.2: Generate default /etc/containerd/config.toml if missing"
   shell: |
     containerd config default > /etc/containerd/config.toml
   args:
     creates: /etc/containerd/config.toml
   notify: restart containerd
 
-- name: Disable AppArmor in CRI
+- name: "Step 11.3: Disable AppArmor in CRI"
   lineinfile:
     path: /etc/containerd/config.toml
     regexp: '(\s+)disable_apparmor = false'
@@ -21,7 +21,7 @@
     backrefs: yes
   notify: restart containerd
 
-- name: Update sandbox_image to pause:3.10
+- name: "Step 11.4: Update sandbox_image to pause:3.10"
   lineinfile:
     path: /etc/containerd/config.toml
     regexp: '(\s+)sandbox_image = ".*"'
@@ -29,7 +29,7 @@
     backrefs: yes
   notify: restart containerd
 
-- name: Enable SystemdCgroup
+- name: "Step 11.5: Enable SystemdCgroup"
   lineinfile:
     path: /etc/containerd/config.toml
     regexp: '(\s+)SystemdCgroup = false'

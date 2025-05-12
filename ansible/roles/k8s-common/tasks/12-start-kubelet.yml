@@ -1,4 +1,4 @@
-- name: Enable and start kubelet service
+- name: "Step 12: Enable and start kubelet service"
   systemd:
     name: kubelet
     enabled: yes
