@@ -22,6 +22,7 @@ Approved PR: https://github.com/remla2025-team19/lib-ml/pull/3
 
 -- Victor: --
 Created PR: https://github.com/remla2025-team19/operation/pull/4
+Approved PR: https://github.com/remla2025-team19/operation/pull/3
 
 -- Samuel: --
 Created PR: https://github.com/remla2025-team19/operation/pull/3
