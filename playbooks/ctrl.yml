@@ -1,6 +1,8 @@
 ---
 - hosts: all
   become: true
+  vars:
+    flannel_version: "v0.26.7"
   tasks:
     # Step 13
     - name: Check if Kubernetes admin.conf already exists
@@ -57,13 +59,20 @@
       become: true
 
     # Step 15: Create Pod network
-    - name: Copy flannel config to the VM
-      ansible.builtin.copy:
-        src: "{{ playbook_dir }}/kube-flannel.yml"
+    - name: Download flannel config from GitHub
+      ansible.builtin.get_url:
+        url: "https://github.com/flannel-io/flannel/releases/download/{{ flannel_version }}/kube-flannel.yml"
         dest: /home/vagrant/kube-flannel.yml
         owner: vagrant
         group: vagrant
         mode: '0644'
+
+    - name: Modify flannel config to use eth1 interface
+      ansible.builtin.replace:
+        path: /home/vagrant/kube-flannel.yml
+        regexp: '(\s+)- args:\n(\s+)- --ip-masq\n(\s+)- --kube-subnet-mgr'
+        replace: '\1- args:\n\2- --ip-masq\n\3- --kube-subnet-mgr\n\3- --iface=eth1'
+      register: flannel_modified
 
     - name: Check if flannel is already deployed
       ansible.builtin.command:
