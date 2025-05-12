@@ -92,15 +92,14 @@
         var: all_pods.stdout_lines
 
     - name: "Step 16: Add Helm signing key"
-      shell: |
-        curl https://baltocdn.com/helm/signing.asc | 
-        sudo gpg --dearmor > /etc/apt/keyrings/helm.gpg
-      args:
-        creates: /etc/apt/keyrings/helm.gpg
+      ansible.builtin.apt_key:
+        url: https://baltocdn.com/helm/signing.asc
+        state: present
+
 
     - name: "Step 16.2: Add Helm repository"
       apt_repository:
-        repo: "deb [arch=amd64, signed-by=/etc/apt/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+        repo: "deb https://baltocdn.com/helm/stable/debian/ all main"
         state: present
         filename: helm-stable   
 
