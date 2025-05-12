@@ -1,33 +1,15 @@
 
-- name: Ensure keyrings directory exists for Helm
-  file:
-    path: /usr/share/keyrings
-    state: directory
-    mode: '0755'
-
 - name: Download Helm GPG key (ASCII)
-  get_url:
-    url: https://baltocdn.com/helm/signing.asc
-    dest: /usr/share/keyrings/helm.gpg.asc
-    mode: '0644'
-    force: yes
-
-- name: De-armor Helm GPG key
-  command: >
-    gpg --dearmor
-        -o /usr/share/keyrings/helm.gpg
-        /usr/share/keyrings/helm.gpg.asc
-  args:
-    creates: /usr/share/keyrings/helm.gpg
+  apt_repository:
+    repo: "deb https://baltocdn.com/helm/stable/debian/ all main"
+    state: present
+    update_cache: yes
 
 - name: Add Helm APT repository
   apt_repository:
-    repo: >
-      deb [signed-by=/usr/share/keyrings/helm.gpg]
-      https://baltocdn.com/helm/stable/debian/ all main
+    repo: deb https://baltocdn.com/helm/stable/debian/ all main
     filename: helm
     state: present
-    update_cache: yes
 
 - name: Install Helm package
   apt:
