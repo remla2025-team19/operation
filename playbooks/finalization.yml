@@ -1,10 +1,12 @@
 ---
 - hosts: all
-  become: true
+  become_user: vagrant
   vars:
     metallb_version: "v0.14.9"
+  environment:
+    KUBECONFIG: /home/vagrant/.kube/config
   tasks:
-    # Install MetalLB for LoadBalancer services
+    # Step 20
     - name: Download MetalLB manifest from GitHub
       ansible.builtin.get_url:
         url: "https://raw.githubusercontent.com/metallb/metallb/{{ metallb_version }}/config/manifests/metallb-native.yaml"
@@ -20,26 +22,17 @@
       ignore_errors: true
       changed_when: false
       become: false
-      become_user: vagrant
-      environment:
-        KUBECONFIG: /home/vagrant/.kube/config
 
     - name: Apply MetalLB manifest
       ansible.builtin.command:
         cmd: kubectl apply -f /home/vagrant/metallb-native.yaml
       when: metallb_check.rc != 0
       become: false
-      become_user: vagrant
-      environment:
-        KUBECONFIG: /home/vagrant/.kube/config
     
     - name: Wait for MetalLB pods to be ready
       ansible.builtin.command:
         cmd: kubectl -n metallb-system wait -l app=metallb,component=controller --for=condition=Ready pods --all --timeout=60s
       become: false
-      become_user: vagrant
-      environment:
-        KUBECONFIG: /home/vagrant/.kube/config
       register: metallb_pods_ready
       changed_when: false
       when: metallb_check.rc != 0
@@ -77,6 +70,42 @@
       ansible.builtin.command:
         cmd: kubectl apply -f /home/vagrant/metallb-config.yaml
       become: false
-      become_user: vagrant
-      environment:
-        KUBECONFIG: /home/vagrant/.kube/config
+
+    # Step 21
+    - name: Install ingress-nginx with helm
+      kubernetes.core.helm:
+        # Note: Add ingressClassName:"nginx" to the spec of any Ingress that should use this new IngressController.
+        name: ingress-nginx
+        chart_ref: ingress-nginx
+        chart_repo_url: https://kubernetes.github.io/ingress-nginx
+        release_namespace: ingress-nginx
+        create_namespace: true
+        values:
+          controller:
+            service:
+              loadBalancerIP: 192.168.56.90
+      become: false
+
+    # Step 22
+    - name: Install Kubernetes Dashboard with helm
+      kubernetes.core.helm:
+        name: kubernetes-dashboard
+        chart_ref: kubernetes-dashboard
+        chart_repo_url: https://kubernetes.github.io/dashboard/
+        release_namespace: kubernetes-dashboard
+        create_namespace: true
+      become: false
+
+    - name: Copy dashboard.yml to host
+      become: false
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../k8s/dashboard.yml"
+        dest: /home/vagrant/.kube/dashboard.yml
+        owner: vagrant
+        group: vagrant
+        mode: '0644'
+          
+    - name: Apply dashboard.yml to set up admin user
+      become: false
+      ansible.builtin.command:
+        cmd: kubectl apply -f /home/vagrant/.kube/dashboard.yml
