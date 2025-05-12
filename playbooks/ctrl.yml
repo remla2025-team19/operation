@@ -120,5 +120,8 @@
     - name: Install helm diff
       ansible.builtin.shell:
         cmd: helm plugin install https://github.com/databus23/helm-diff
+      register: helm_diff_result
+      failed_when: helm_diff_result.rc != 0 and 'plugin already exists' not in helm_diff_result.stderr
+      changed_when: helm_diff_result.rc == 0
       become: false
       become_user: vagrant
