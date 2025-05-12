@@ -1,3 +1,57 @@
 ---
 - hosts: all
   become: true
+  tasks:
+    # Step 13
+    - name: Check if Kubernetes admin.conf already exists
+      ansible.builtin.stat:
+        path: /etc/kubernetes/admin.conf
+      register: kubeadmin_conf_stat
+
+    - name: Initialize the Kubernetes cluster using kubeadm
+      ansible.builtin.command:
+        argv:
+          - kubeadm
+          - init
+          - --apiserver-advertise-address=192.168.56.100 
+          - --node-name
+          - ctrl
+          - --pod-network-cidr=10.244.0.0/16 
+          - --ignore-preflight-errors=NumCPU  # ignore min 2 cpu error
+        creates: /etc/kubernetes/admin.conf
+      when: not kubeadmin_conf_stat.stat.exists
+      changed_when: true
+
+    # Step 14: Setup kubectl
+    - name: Create .kube directory for vagrant user
+      ansible.builtin.file:
+        path: /home/vagrant/.kube
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: '0755'
+
+    - name: Copy admin.conf to vagrant user's .kube/config
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/vagrant/.kube/config
+        remote_src: yes
+        owner: vagrant
+        group: vagrant
+        mode: '0600'
+
+    - name: Ensure kube directory exists on host
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/../kube"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: Fetch admin.conf from VM to host
+      ansible.builtin.fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ playbook_dir }}/../kube/admin.conf"
+        flat: yes
+      become: true
