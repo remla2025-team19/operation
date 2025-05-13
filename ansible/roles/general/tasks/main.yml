@@ -1,0 +1,9 @@
+- import_tasks: 04-ssh-key-setup.yml
+- import_tasks: 05-disable-swap.yml
+- import_tasks: 06-load-kernel.yml
+- import_tasks: 07-ip-forward-bridge-nf.yml
+- import_tasks: 08-manage-hosts.yml
+- import_tasks: 09-add-kube-repo.yml
+- import_tasks: 10-k8s-tools.yml
+- import_tasks: 11-configure-containerd.yml
+- import_tasks: 12-start-kubelet.yml

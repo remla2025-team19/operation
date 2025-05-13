@@ -1,0 +1,7 @@
+- name: Set authorized key for user vagrant copying it from current user
+  ansible.posix.authorized_key:
+    user: vagrant
+    state: present
+    key: "{{ lookup('file', item) }}"
+  with_fileglob:
+    - "{{ playbook_dir }}/ssh_keys/*.pub"
