@@ -15,7 +15,7 @@
         group: vagrant
         mode: '0644'
 
-    - name: Check if MetalLB is already deployed
+    - name: Check if MetalLB is already deployed (will fail on first run, don't worry)
       ansible.builtin.command:
         cmd: kubectl get namespace metallb-system
       register: metallb_check
