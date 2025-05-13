@@ -29,6 +29,7 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/3
 -- Samuel: --
 Created PR (individual implementation): https://github.com/remla2025-team19/operation/pull/3
 Steps 4-10 were used for main implementation
+Approved PR: https://github.com/remla2025-team19/operation/pull/6
 
 -- Siddharth --
 Created PR (individual implementation): https://github.com/remla2025-team19/operation/pull/5
