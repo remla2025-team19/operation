@@ -1,0 +1,4 @@
+- name: "Step 19: Join the cluster"
+  ansible.builtin.shell: "{{ join_command }}"
+
+  # This ensures that the join command is run on the worker nodes

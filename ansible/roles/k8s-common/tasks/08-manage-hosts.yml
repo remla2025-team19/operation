@@ -1,4 +1,4 @@
-- name: Set /etc/hosts with dynamic IP/hostname mapping
+- name: "Step 8: Set /etc/hosts with dynamic IP/hostname mapping"
   ansible.builtin.template:
     src: templates/hosts.j2
     dest: /etc/hosts

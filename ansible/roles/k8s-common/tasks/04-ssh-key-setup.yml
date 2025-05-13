@@ -1,4 +1,4 @@
-- name: Ensure vagrant user has SSH directory
+- name: "Step 4.1: Ensure vagrant user has SSH directory"
   file:
     path: /home/vagrant/.ssh
     state: directory
@@ -6,7 +6,7 @@
     group: vagrant
     mode: '0700'
 
-- name: Add public keys to authorized_keys
+- name: "Step 4.2: Add public keys to authorized_keys"
   ansible.posix.authorized_key:
     user: vagrant
     state: present

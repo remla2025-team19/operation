@@ -1,18 +1,17 @@
-- name: Create host kubeconfig directory
+- name: "Step 14.1: Create host kubeconfig directory"
   file:
     path: "{{ playbook_dir }}/kubeconfig"
     state: directory
     mode: '0755'
   run_once: true
 
-- name: Fetch admin.conf to host
+- name: "Step 14.2: Fetch admin.conf to host"
   fetch:
     src: /etc/kubernetes/admin.conf
     dest: "{{ playbook_dir }}/kubeconfig/config"
     flat: yes
-  run_once: true
 
-- name: Add kubeconfig/ to .gitignore on host
+- name: "Step 14.3: Add kubeconfig/ to .gitignore on host"
   lineinfile:
     path: "{{ playbook_dir }}/../.gitignore"
     line: "kubeconfig/"
