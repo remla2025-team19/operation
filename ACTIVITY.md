@@ -19,6 +19,9 @@ Approved PR: https://github.com/remla2025-team19/app-service/pull/1
 Approved PR: https://github.com/remla2025-team19/app-service/pull/2
 Approved PR: https://github.com/remla2025-team19/lib-ml/pull/3
 
+-- Manya: --
+Created PR: https://github.com/remla2025-team19/app-frontend/pull/1
+
 # A2:
 We were told to perform all tasks independently to have a better grasp over the contents.
 So we all have separate branches with our implementation and then we add parts to the main branch.
@@ -39,3 +42,7 @@ Created PR (individual implementation): https://github.com/remla2025-team19/oper
 Created PR (Steps 11-19 were added to main): https://github.com/remla2025-team19/operation/pull/6
 Approved PR: https://github.com/remla2025-team19/operation/pull/4
 Approved PR: https://github.com/remla2025-team19/operation/pull/3
+
+-- Manya --
+Created PR: https://github.com/remla2025-team19/operation/pull/8
+Approved PR: https://github.com/remla2025-team19/operation/pull/7
