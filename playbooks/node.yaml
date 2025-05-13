@@ -1,0 +1,16 @@
+---
+- name: Kubernetes Worker Node Setup
+  hosts: node-1, node-2
+  become: true
+
+  tasks:
+    #18. kubernetes join command for worker nodes
+    - name: Generate join command on the controller
+      ansible.builtin.shell: kubeadm token create --print-join-command
+      register: join_command
+      delegate_to: ctrl  # Run this command on the controller
+
+    #19. join worker nodes to the kubernetes cluster
+    - name: Run join command on worker nodes
+      ansible.builtin.shell: "{{ join_command.stdout }}"
+      when: join_command.stdout != ""

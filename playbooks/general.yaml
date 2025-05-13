@@ -1,0 +1,106 @@
+---
+- name: General provisioning for all nodes
+  hosts: all
+  become: true
+
+  tasks:
+
+    #5. disable swap
+    - name: Disable swap (temporary)
+      ansible.builtin.shell: swapoff -a
+
+    - name: Remove swap entry from /etc/fstab (permanent)
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^.*swap.*$'
+        state: absent
+
+    #4. register SSH Keys
+    - name: Copy SSH keys to vagrant user
+      ansible.posix.authorized_key:
+        user: vagrant
+        state: present
+        key: "{{ lookup('file', item) }}"
+      with_fileglob:
+        - "../ssh-keys/*.pub"
+
+    #6. nable br_netfilter and overlay kernel modules
+    - name: Ensure br_netfilter and overlay modules are loaded at boot
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          br_netfilter
+          overlay
+        mode: '0644'
+
+    - name: Load kernel modules now
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - br_netfilter
+        - overlay
+
+    #7. enable IPv4 forwarding + iptables bridging
+    - name: Set sysctl parameters for Kubernetes networking
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: yes
+      loop:
+        - { key: 'net.ipv4.ip_forward', value: '1' }
+        - { key: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+        - { key: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+
+    # 8. Copy /etc/hosts file to all nodes
+    - name: Copy /etc/hosts file to all nodes
+      ansible.builtin.copy:
+        src: files/hosts
+        dest: /etc/hosts
+        mode: '0644'
+
+    #9. kubernetes gpg
+    - name: Add Kubernetes GPG key
+      ansible.builtin.apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+    - name: Add Kubernetes APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+        state: present
+    #update cache
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    #10. k8s tools
+    - name: Install containerd
+      ansible.builtin.apt:
+        name: containerd
+        state: present
+        version: "1.7.24"
+
+    - name: Install runc
+      ansible.builtin.apt:
+        name: runc
+        state: present
+        version: "1.1.12"
+
+    - name: Install kubeadm, kubelet, kubectl
+      ansible.builtin.apt:
+        name:
+          - kubeadm=1.32.4-00
+          - kubelet=1.32.4-00
+          - kubectl=1.32.4-00
+        state: present
+
+
+
+
+
+
+    # (Optional prep) Package cache
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
