@@ -1,2 +1,30 @@
+---
 - hosts: all
-  tasks: []
+  become: true
+  tasks:
+    # Step 18
+    
+    # this is done in step 13 as well, so we could skip
+    - name: "Check if cluster is initialized" 
+      stat:
+        path: /etc/kubernetes/admin.conf
+      register: admin_conf
+      delegate_to: ctrl
+      changed_when: false
+
+    - name: Print command to join the cluster
+      ansible.builtin.shell:
+        cmd: kubeadm token create --print-join-command
+      register: join_command
+      delegate_to: ctrl
+
+    # Step 19
+    - name: Check if node is already part of a cluster
+      ansible.builtin.stat:
+        path: /etc/kubernetes/kubelet.conf
+      register: kubelet_conf_stat
+
+    - name: Join the cluster
+      ansible.builtin.shell:
+        cmd: "{{ join_command.stdout }}"
+      when: not kubelet_conf_stat.stat.exists
