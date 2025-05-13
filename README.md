@@ -45,5 +45,5 @@ vagrant up
 2. Finalize the cluster
 
 ```bash
-ansible-playbook -u vagrant -i 192.168.56.100, playbooks/finalization.yml
+ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml
 ```
