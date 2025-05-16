@@ -4,3 +4,9 @@ kind: Kustomization
 resources:
   - model.yaml
   - app.yaml
+
+images:
+  - name: ghcr.io/remla2025-team19/model-service
+    newTag: "0.0.5"
+  - name: ghcr.io/remla2025-team19/app-service
+    newTag: "0.0.14"
