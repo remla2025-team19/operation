@@ -46,3 +46,9 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/3
 -- Manya --
 Created PR (individual implementation): https://github.com/remla2025-team19/operation/pull/8
 Approved PR: https://github.com/remla2025-team19/operation/pull/7
+
+
+# A3:
+
+-- Victor: --
+Created PR: https://github.com/remla2025-team19/operation/pull/9
