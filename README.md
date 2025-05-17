@@ -47,3 +47,11 @@ vagrant up
 ```bash
 ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml
 ```
+
+## Instructions for assignment 3
+
+To apply the k8s resources. Set the image version tags in [kubernetes/kustomization.yaml](./kubernetes/kustomization.yaml) then use the following command:
+
+```bash
+kubectl apply -k kubernetes/
+```
