@@ -13,7 +13,7 @@
         dest: /home/vagrant/metallb-native.yaml
         owner: vagrant
         group: vagrant
-        mode: '0644'
+        mode: "0644"
 
     - name: Check if MetalLB is already deployed (will fail on first run, don't worry)
       ansible.builtin.command:
@@ -28,7 +28,7 @@
         cmd: kubectl apply -f /home/vagrant/metallb-native.yaml
       when: metallb_check.rc != 0
       become: false
-    
+
     - name: Wait for MetalLB pods to be ready
       ansible.builtin.command:
         cmd: kubectl -n metallb-system wait -l app=metallb,component=controller --for=condition=Ready pods --all --timeout=60s
@@ -39,7 +39,6 @@
       ignore_errors: true
       retries: 3
       delay: 10
-
 
     - name: Create MetalLB configuration
       ansible.builtin.copy:
@@ -64,7 +63,7 @@
             - default-pool
         owner: vagrant
         group: vagrant
-        mode: '0644'
+        mode: "0644"
 
     - name: Apply MetalLB configuration
       ansible.builtin.command:
@@ -99,12 +98,12 @@
     - name: Copy dashboard.yml to host
       become: false
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../k8s/dashboard.yml"
+        src: "{{ playbook_dir }}/k8s/dashboard.yml"
         dest: /home/vagrant/.kube/dashboard.yml
         owner: vagrant
         group: vagrant
-        mode: '0644'
-          
+        mode: "0644"
+
     - name: Apply dashboard.yml to set up admin user
       become: false
       ansible.builtin.command:
