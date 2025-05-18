@@ -55,3 +55,8 @@ To apply the k8s resources. Set the image version tags in [kubernetes/kustomizat
 ```bash
 kubectl apply -k kubernetes/
 ```
+In case of issues, restart minikube.
+```bash
+minikube stop
+minikube start
+```
