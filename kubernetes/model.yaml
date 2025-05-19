@@ -25,6 +25,16 @@ spec:
                 configMapKeyRef:
                   name: model-config
                   key: MODEL_VERSION
+            - name: MODEL_SERVICE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: model-config
+                  key: MODEL_SERVICE_PORT
+            - name: MODEL_SERVICE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: model-config
+                  key: MODEL_SERVICE_HOST
             - name: MODEL_ARTIFACT_URL
               valueFrom:
                 configMapKeyRef:
@@ -78,3 +88,5 @@ data:
   MODEL_VERSION: "1.0.11"
   MODEL_ARTIFACT_URL: "https://github.com/remla2025-team19/model-training/releases/download/v1.0.11/sentiment_model_v1.0.11.pkl"
   PREDICTION_THRESHOLD: "0.75" # random variable
+  MODEL_SERVICE_PORT: "5001"
+  MODEL_SERVICE_HOST: "0.0.0.0"
