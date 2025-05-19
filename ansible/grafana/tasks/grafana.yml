@@ -1,0 +1,4 @@
+- name: Grafana dashboard ConfigMap
+  ansible.builtin.command:
+    cmd: kubectl apply -f ansible/grafana/dashboard-configmap.yaml
+  become: false
