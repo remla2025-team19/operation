@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{.Release.Name }}-model-deployment
+  name: {{ .Release.Name }}-model-deployment
   labels:
     app: {{ .Release.Name }}-model
 spec:
   replicas: {{ .Values.model.replicaCount }}
-  selector: 
+  selector:
     matchLabels:
       app: {{ .Release.Name }}-model
   template:
@@ -18,52 +18,55 @@ spec:
         - name: model-service
           image: {{ .Values.model.image.repository }}:{{ .Values.model.image.tag }}
           ports:
-          - containerPort: {{ .Values.model.service.port }}
+            - name: http
+              containerPort: {{ .Values.model.service.port }}
+            - name: metrics
+              containerPort: 9100
           env:
-          - name: MODEL_VERSION
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-model-config
-                key: MODEL_VERSION 
-          - name: MODEL_SERVICE_PORT
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-model-config
-                key: MODEL_SERVICE_PORT
-          - name: MODEL_SERVICE_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-model-config
-                key: MODEL_SERVICE_HOST
-          - name: MODEL_ARTIFACT_URL
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-model-config
-                key: MODEL_ARTIFACT_URL
-          - name: PREDICTION_THRESHOLD
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Release.Name }}-model-config
-                key: PREDICTION_THRESHOLD
-          - name: MODEL_CACHE_DIR
-            value: "/model_cache"
+            - name: MODEL_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: MODEL_VERSION
+            - name: MODEL_SERVICE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: MODEL_SERVICE_PORT
+            - name: MODEL_SERVICE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: MODEL_SERVICE_HOST
+            - name: MODEL_ARTIFACT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: MODEL_ARTIFACT_URL
+            - name: PREDICTION_THRESHOLD
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: PREDICTION_THRESHOLD
+            - name: MODEL_CACHE_DIR
+              value: "/model_cache"
           volumeMounts:
-          - name: model-cache-volume
-            mountPath: /models_cache
+            - name: model-cache-volume
+              mountPath: /models_cache
           resources:
-            {{- with .Values.model.resources}}
+{{- with .Values.model.resources }}
             limits:
               memory: {{ .limits.memory | quote }}
               cpu: {{ .limits.cpu | quote }}
             requests:
               memory: {{ .requests.memory | quote }}
               cpu: {{ .requests.cpu | quote }}
-            {{- end}}
+{{- end }}
       volumes:
-      - name: model-cache-volume
-        hostPath:
-          path: {{ .Values.storage.modelCache.path }}
-          type: DirectoryOrCreate
+        - name: model-cache-volume
+          hostPath:
+            path: {{ .Values.storage.modelCache.path }}
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
@@ -75,9 +78,14 @@ spec:
   selector:
     app: {{ .Release.Name }}-model
   ports:
-  - protocol: TCP
-    port: {{ .Values.model.service.port }}
-    targetPort: {{ .Values.model.service.port }}
+    - name: http
+      protocol: TCP
+      port: {{ .Values.model.service.port }}
+      targetPort: http
+    - name: metrics
+      protocol: TCP
+      port: 9100
+      targetPort: metrics
   type: ClusterIP
 ---
 apiVersion: v1
@@ -85,8 +93,8 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-model-config
 data:
-  MODEL_VERSION: {{ .Values.model.config.version | quote }}
-  MODEL_ARTIFACT_URL: {{ .Values.model.config.artifactUrl | quote}}
-  PREDICTION_THRESHOLD: {{ .Values.model.config.predictionThreshold | quote}}
-  MODEL_SERVICE_PORT: {{ .Values.model.service.port | quote }}
-  MODEL_SERVICE_HOST: {{ .Values.model.service.host | quote}}
+  MODEL_VERSION:          {{ .Values.model.config.version            | quote }}
+  MODEL_ARTIFACT_URL:     {{ .Values.model.config.artifactUrl        | quote }}
+  PREDICTION_THRESHOLD:   {{ .Values.model.config.predictionThreshold| quote }}
+  MODEL_SERVICE_PORT:     {{ .Values.model.service.port              | quote }}
+  MODEL_SERVICE_HOST:     {{ .Values.model.service.host              | quote }}
