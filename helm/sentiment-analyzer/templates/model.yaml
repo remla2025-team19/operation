@@ -93,8 +93,8 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-model-config
 data:
-  MODEL_VERSION: {{ .Values.model.config.version | quote }}
-  MODEL_ARTIFACT_URL: {{ .Values.model.config.artifactUrl | quote }}
-  PREDICTION_THRESHOLD: {{ .Values.model.config.predictionThreshold| quote }}
-  MODEL_SERVICE_PORT: {{ .Values.model.service.port | quote }}
-  MODEL_SERVICE_HOST: {{ .Values.model.service.host | quote }}
+  MODEL_VERSION:          {{ .Values.model.config.version            | quote }}
+  MODEL_ARTIFACT_URL:     {{ .Values.model.config.artifactUrl        | quote }}
+  PREDICTION_THRESHOLD:   {{ .Values.model.config.predictionThreshold| quote }}
+  MODEL_SERVICE_PORT:     {{ .Values.model.service.port              | quote }}
+  MODEL_SERVICE_HOST:     {{ .Values.model.service.host              | quote }}
