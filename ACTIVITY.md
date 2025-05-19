@@ -52,6 +52,7 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/7
 
 -- Victor: --
 Created PR: https://github.com/remla2025-team19/operation/pull/9 (related to A3)
+Approved PR: https://github.com/remla2025-team19/operation/pull/11
 
 
 -- Samuel: --
