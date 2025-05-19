@@ -1,0 +1,15 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your application has been deployed with the following configuration:
+
+Model Service:
+  - URL: http://{{ .Release.Name }}-model:{{ .Values.model.service.port }}
+
+App Service:
+  - Access URL: http://{{ .Values.app.ingress.host }}
+
+To check the status of your deployment, run:
+  kubectl get pods -l "app in ({{ .Release.Name }}-app,{{ .Release.Name }}-model)"
+
+To check the services, run:
+  kubectl get services -l "app in ({{ .Release.Name }}-app,{{ .Release.Name }}-model)"

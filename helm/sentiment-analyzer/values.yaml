@@ -1,0 +1,50 @@
+# Default values for sentiment-analyzer
+
+model: 
+  replicaCount: 1
+  image:
+    repository: ghcr.io/remla2025-team19/model-service
+    tag: "0.0.5"
+  service:
+    port: 5001
+    host: "0.0.0.0"
+  config:
+    version: "1.0.11"
+    artifactUrl: "https://github.com/remla2025-team19/model-training/releases/download/v1.0.11/sentiment_model_v1.0.11.pkl"
+    predictionThreshold: "0.75"
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+app:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/remla2025-team19/app-service
+    tag: "0.0.14"
+  service:
+    port: 80
+    targetPort: 8000
+  ingress:
+    enabled: true
+    className: nginx
+    host: app.local
+  config: 
+    logLevel: "info"
+    dbUser: "admin"
+  secrets:
+    apiKey: "c2stdjEta2pkZmxrYWhmbHNkYWl1eWhjb3V3aWhxZW91cmg="
+    dbPassword: "cGFzc3dvcmQ="
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+    requests: 
+      memory: "256Mi"
+      cpu: "250m"
+
+storage:
+  modelCache:
+    path: "/mnt/shared/model_cache"

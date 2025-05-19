@@ -20,11 +20,11 @@ spec:
           ports:
             - containerPort: 8000
           env:
-            - name: MODEL_API_URL
+            - name: MODEL_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
                   name: app-config
-                  key: MODEL_API_URL
+                  key: MODEL_SERVICE_URL
             # fake variables
             - name: APP_LOG_LEVEL
               valueFrom:
@@ -94,7 +94,7 @@ metadata:
   name: app-config
 data:
   LOG_LEVEL: "info"
-  MODEL_API_URL: "http://model:5001"
+  MODEL_SERVICE_URL: "http://model:5001"
   DB_USER: "admin"
 ---
 apiVersion: v1

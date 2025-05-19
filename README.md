@@ -50,7 +50,7 @@ ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml
 
 ## Instructions for assignment 3
 
-To apply the k8s resources. Set the image version tags in [kubernetes/kustomization.yaml](./kubernetes/kustomization.yaml) then use the following command:
+1. To apply the k8s resources. Set the image version tags in [kubernetes/kustomization.yaml](./kubernetes/kustomization.yaml) then use the following command:
 
 ```bash
 kubectl apply -k kubernetes/
@@ -60,3 +60,21 @@ In case of issues, restart minikube.
 minikube stop
 minikube start
 ```
+
+2. To set install Helm
+Run the command
+
+```bash
+helm install sentiment-analyzer-1 ./helm/sentiment-analyzer/ --set app.ingress.host=app1.local
+```
+
+To install another instance for the same cluster, be sure the names are changes. For example,
+```bash
+helm install sentiment-analyzer-2 ./helm/sentiment-analyzer/ --set app.ingress.host=app2.local --set model.service.port=5002
+```
+
+All the requirements are met:
+- [x] Helm chart `Chart.yaml` exists in `helm/sentiment-analyzer/`
+- [x] Covers the deployment (app-service and model-service) using `helm/sentiment-analyzer/templates`
+- [x] Service name can be changed via `helm/sentiment-analyzer/values.yaml`
+- [x] Helm chart can be installed more than once. All resources use the prefic {{ .Release.Name }}
