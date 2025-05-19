@@ -78,3 +78,16 @@ All the requirements are met:
 - [x] Covers the deployment (app-service and model-service) using `helm/sentiment-analyzer/templates`
 - [x] Service name can be changed via `helm/sentiment-analyzer/values.yaml`
 - [x] Helm chart can be installed more than once. All resources use the prefic {{ .Release.Name }}
+
+Install Prometheus and Grafana using the following command:
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+
+Create namespace + CRDs + Prometheus/Alertmanager/Grafana:
+```bash
+helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+  --namespace monitoring --create-namespace
+```
