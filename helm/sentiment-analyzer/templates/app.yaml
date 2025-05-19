@@ -23,25 +23,30 @@ spec:
               - name: MODEL_SERVICE_URL
                 valueFrom: 
                   configMapKeyRef: 
-                    name: {{.Release.Name }}-app-config
+                    name: {{ .Release.Name }}-app-config
                     key: MODEL_SERVICE_URL
               - name: APP_LOG_LEVEL
                 valueFrom:
                   configMapKeyRef:
-                    name: {{.Release.Name }}-app-config
+                    name: {{ .Release.Name }}-app-config
                     key: LOG_LEVEL
               - name: APP_DB_USER
                 valueFrom:
                   configMapKeyRef:
                     name: {{ .Release.Name }}-app-config
                     key: DB_USER
+              - name: APP_API_KEY
+                valueFrom: 
+                  secretKeyRef:
+                    name: {{ .Release.Name }}-app-credentials
+                    key: API_KEY
               - name: APP_DB_PASSWORD
                 valueFrom:
-                  configMapKeyRef: 
+                  secretKeyRef: 
                     name: {{.Release.Name}}-app-credentials
                     key: DB_PASSWORD
             resources:
-              {{- with .Values.model.resources}}
+              {{- with .Values.app.resources}}
               limits:
                 memory: {{ .limits.memory | quote }}
                 cpu: {{ .limits.cpu | quote }}
@@ -72,17 +77,17 @@ metadata:
   name: {{ .Release.Name }}-app-ingress
 spec:
   ingressClassName: {{ .Values.app.ingress.className }}
-rules:
-- host: {{ .Values.app.ingress.host }}
-  http:
-    paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ .Release.Name }}-app-service
-            port:
-              number: {{ .Values.app.service.port }}
+  rules:
+  - host: {{ .Values.app.ingress.host }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-app-service
+              port:
+                number: {{ .Values.app.service.port }}
 {{- end }}
 ---
 apiVersion: v1
@@ -91,7 +96,7 @@ metadata:
   name: {{ .Release.Name }}-app-config
 data:
   LOG_LEVEL: {{ .Values.app.config.logLevel | quote}}
-  MODEL_SERVICE_URL: "http://{{ .Release.Name }}-model: {{.Values.model.service.port}}"
+  MODEL_SERVICE_URL: "http://{{ .Release.Name }}-model:{{.Values.model.service.port}}"
   DB_USER: {{ .Values.app.config.dbUser | quote}}
 ---
 apiVersion: v1

@@ -1,4 +1,4 @@
-apiVersion: app/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{.Release.Name }}-model-deployment
@@ -59,11 +59,11 @@ spec:
               memory: {{ .requests.memory | quote }}
               cpu: {{ .requests.cpu | quote }}
             {{- end}}
-    volumes:
-    - name: model-cache-volume
-      hostPath:
-        path: {{ .Values.storage.modelCache.path }}
-        type: DirectoryOrCreate
+      volumes:
+      - name: model-cache-volume
+        hostPath:
+          path: {{ .Values.storage.modelCache.path }}
+          type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
@@ -88,5 +88,5 @@ data:
   MODEL_VERSION: {{ .Values.model.config.version | quote }}
   MODEL_ARTIFACT_URL: {{ .Values.model.config.artifactUrl | quote}}
   PREDICTION_THRESHOLD: {{ .Values.model.config.predictionThreshold | quote}}
-  MODEL_SERVICE_PORT: {{ .Values.model.config.predictionThreshold | quote }}
+  MODEL_SERVICE_PORT: {{ .Values.model.service.port | quote }}
   MODEL_SERVICE_HOST: {{ .Values.model.service.host | quote}}
