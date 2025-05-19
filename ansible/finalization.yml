@@ -119,6 +119,7 @@
       become: false
       ansible.builtin.command:
         cmd: kubectl apply -f /home/vagrant/.kube/dashboard.yml
+
     
 
     # Step 25: Install Helm Chart for Sentiment Analyzer
@@ -145,3 +146,20 @@
             ingress:
               host: app.local
       become: false 
+
+
+    - name: Grafana Installation with Helm
+      kubernetes.core.helm:
+        name: grafana
+        chart_ref: grafana
+        chart_repo_url: https://grafana.github.io/helm-charts
+        release_namespace: grafana
+        create_namespace: true
+      become: false
+
+    #Auto import grafana dashboard
+    - name: Apply Grafana dashboard ConfigMap
+      ansible.builtin.command:
+        cmd: kubectl apply -f ansible/grafana/dashboard-configmap.yaml
+      become: false
+
