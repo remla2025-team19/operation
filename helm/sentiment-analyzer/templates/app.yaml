@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app-deployment
+  labels:
+    app: {{ .Release.Name }}-app
+spec:
+    replicas: {{ .Values.app.replicaCount }}
+    selector:
+      matchLabels:
+        app: {{ .Release.Name }}-app
+    template:
+      metadata:
+        labels:
+          app: {{ .Release.Name }}-app
+      spec:
+        containers:
+          - name: app-service
+            image: {{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}
+            ports:
+              - containerPort: {{ .Values.app.service.targetPort }}
+            env:
+              - name: MODEL_SERVICE_URL
+                valueFrom: 
+                  configMapKeyRef: 
+                    name: {{.Release.Name }}-app-config
+                    key: MODEL_SERVICE_URL
+              - name: APP_LOG_LEVEL
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{.Release.Name }}-app-config
+                    key: LOG_LEVEL
+              - name: APP_DB_USER
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ .Release.Name }}-app-config
+                    key: DB_USER
+              - name: APP_DB_PASSWORD
+                valueFrom:
+                  configMapKeyRef: 
+                    name: {{.Release.Name}}-app-credentials
+                    key: DB_PASSWORD
+            resources:
+{{ toYaml .Values.app.resources | indent 13}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-app-service
+  labels:
+    app: {{ .Release.Name }}-app
+spec:
+  selector:
+    app: {{ .Release.Name }}-app
+  ports:
+  - protocol: TCP
+    port: {{ .Values.app.service.port }}
+    targetPort: {{ .Values.app.service.targetPort }}
+  type: ClusterIP
+---
+{{- if .Values.app.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-app-ingress
+spec:
+  ingressClassName: {{ .Values.app.ingress.className }}
+rules:
+- host: {{ .Values.app.ingress.host }}
+  http:
+    paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-app-service
+            port:
+              number: {{ .Values.app.service.port }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-app-config
+data:
+  LOG_LEVEL: {{ .Values.app.config.logLevel | quote}}
+  MODEL_SERVICE_URL: "http://{{ .Release.Name }}-model: {{.Values.model.service.port}}"
+  DB_USER: {{ .Values.app.config.dbUser | quote}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-app-credentials
+type: Opaque
+data:
+  API_KEY: {{ .Values.app.secrets.apiKey }}
+  DB_PASSWORD: {{ .Values.app.secrets.dbPassword }}
+
+
