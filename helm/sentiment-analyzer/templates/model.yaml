@@ -51,7 +51,14 @@ spec:
           - name: model-cache-volume
             mountPath: /models_cache
           resources:
-{{ toYaml .Values.model.resources | indent 13 }}
+            {{- with .Values.model.resources}}
+            limits:
+              memory: {{ .limits.memory | quote }}
+              cpu: {{ .limits.cpu | quote }}
+            requests:
+              memory: {{ .requests.memory | quote }}
+              cpu: {{ .requests.cpu | quote }}
+            {{- end}}
     volumes:
     - name: model-cache-volume
       hostPath:

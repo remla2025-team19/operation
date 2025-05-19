@@ -41,7 +41,14 @@ spec:
                     name: {{.Release.Name}}-app-credentials
                     key: DB_PASSWORD
             resources:
-{{ toYaml .Values.app.resources | indent 13}}
+              {{- with .Values.model.resources}}
+              limits:
+                memory: {{ .limits.memory | quote }}
+                cpu: {{ .limits.cpu | quote }}
+              requests:
+                memory: {{ .requests.memory | quote }}
+                cpu: {{ .requests.cpu | quote }}
+              {{- end}}
 ---
 apiVersion: v1
 kind: Service
