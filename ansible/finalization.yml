@@ -157,9 +157,18 @@
         create_namespace: true
       become: false
 
+    - name: Copy Grafana dashboard ConfigMap to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/grafana/dashboard-configmap.yaml"
+        dest: /home/vagrant/dashboard-configmap.yaml
+        owner: vagrant
+        group: vagrant
+        mode: "0644"
+      become: false
+
     #Auto import grafana dashboard
     - name: Apply Grafana dashboard ConfigMap
       ansible.builtin.command:
-        cmd: kubectl apply -f ansible/grafana/dashboard-configmap.yaml
+        cmd: kubectl apply -f /home/vagrant/dashboard-configmap.yaml  
       become: false
 
