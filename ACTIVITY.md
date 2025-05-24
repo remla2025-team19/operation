@@ -70,3 +70,6 @@ Created PR: https://github.com/remla2025-team19/operation/pull/10 (related to A3
 Approved PR: https://github.com/remla2025-team19/operation/pull/12 (related to A3)
 
 # Week 5:
+
+-- Victor: --
+Created PR: https://github.com/remla2025-team19/model-training/pull/3 (realted to A4)
