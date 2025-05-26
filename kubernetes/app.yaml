@@ -18,7 +18,7 @@ spec:
         - name: app-service
           image: ghcr.io/remla2025-team19/app-service:0.0.14
           ports:
-            - containerPort: 8000
+            - containerPort: 8080
           env:
             - name: MODEL_SERVICE_URL
               valueFrom:
@@ -67,7 +67,7 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8000
+      targetPort: 8080
   type: ClusterIP
 ---
 apiVersion: networking.k8s.io/v1
