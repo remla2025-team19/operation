@@ -78,7 +78,13 @@ Approved PR: https://github.com/remla2025-team19/model-training/pull/5 (related 
 
 -- Manya --
 Created PR: https://github.com/remla2025-team19/model-training/pull/5 (related to A4)
+Approved PR: https://github.com/remla2025-team19/model-training/pull/3 (related to A4)
 
 -- Samuel: --
 Created PR: https://github.com/remla2025-team19/model-training/pull/7 (related to A4)
-Approved PR: https://github.com/remla2025-team19/model-training/pull/5 (related to A4)
+Approved PR: https://github.com/remla2025-team19/model-training/pull/6 (related to A4)
+
+-- Siddharth: --
+Created PR: https://github.com/remla2025-team19/model-training/pull/6 (related to A4)
+Approved PR: https://github.com/remla2025-team19/model-training/pull/4 (related to A4)
+Approved PR: https://github.com/remla2025-team19/model-training/pull/7 (related to A4)
