@@ -180,6 +180,30 @@
         cmd: kubectl -n istio-system wait --for=condition=Available deployment --all --timeout=300s
       become: false
 
+    - name: Install Istio Prometheus addon
+      kubernetes.core.k8s:
+        src: /home/vagrant/istio-1.25.2/samples/addons/prometheus.yaml
+        state: present
+      become: false
+
+    - name: Install Istio Jaeger addon
+      kubernetes.core.k8s:
+        src: /home/vagrant/istio-1.25.2/samples/addons/jaeger.yaml
+        state: present
+      become: false
+
+    - name: Install Istio Kiali addon
+      kubernetes.core.k8s:
+        src: /home/vagrant/istio-1.25.2/samples/addons/kiali.yaml
+        state: present
+      become: false
+
+    - name: Wait for Istio addons to be ready
+      ansible.builtin.command:
+        cmd: kubectl -n istio-system wait --for=condition=Available deployment --all --timeout=300s
+      become: false
+      ignore_errors: true
+
     # Step 25: Install Helm Chart for Sentiment Analyzer
     - name: Copy Helm Chart to VM
       ansible.builtin.copy:
