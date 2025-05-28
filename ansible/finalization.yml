@@ -204,6 +204,19 @@
       become: false
       ignore_errors: true
 
+    # Configure Istio for Canary Deployment
+    - name: Enable Istio injection on default namespace
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: default
+        definition:
+          metadata:
+            labels:
+              istio-injection: "enabled"
+        state: present
+      become: false
+
     # Step 25: Install Helm Chart for Sentiment Analyzer
     - name: Copy Helm Chart to VM
       ansible.builtin.copy:
