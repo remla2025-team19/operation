@@ -121,17 +121,26 @@
         cmd: kubectl apply -f /home/vagrant/.kube/dashboard.yml
 
     # Step 23: Install Istio
+    - name: Determine Istio architecture suffix
+      ansible.builtin.set_fact:
+        istio_arch_suffix: "{{ 'amd64' if ansible_facts.architecture == 'x86_64' else 'arm64' if ansible_facts.architecture == 'aarch64' else 'unsupported' }}"
+
+    - name: Fail if architecture is unsupported
+      ansible.builtin.fail:
+        msg: "Unsupported architecture: {{ ansible_facts.architecture }}. Istio download is only configured for x86_64 (amd64) and aarch64 (arm64)."
+      when: istio_arch_suffix == 'unsupported'
+
     - name: Download Istio 1.25.2
       ansible.builtin.get_url:
-        url: "https://github.com/istio/istio/releases/download/1.25.2/istio-1.25.2-linux-amd64.tar.gz"
-        dest: /home/vagrant/istio-1.25.2-linux-amd64.tar.gz
+        url: "https://github.com/istio/istio/releases/download/1.25.2/istio-1.25.2-linux-{{ istio_arch_suffix }}.tar.gz"
+        dest: "/home/vagrant/istio-1.25.2-linux-{{ istio_arch_suffix }}.tar.gz"
         owner: vagrant
         group: vagrant
         mode: "0644"
 
     - name: Extract Istio
       ansible.builtin.unarchive:
-        src: /home/vagrant/istio-1.25.2-linux-amd64.tar.gz
+        src: "/home/vagrant/istio-1.25.2-linux-{{ istio_arch_suffix }}.tar.gz"
         dest: /home/vagrant
         remote_src: true
         owner: vagrant
@@ -146,7 +155,6 @@
     - name: Create IstioOperator configuration for MetalLB
       ansible.builtin.copy:
         dest: /home/vagrant/istio-config.yaml
-        # TODO: check if the IP is properly allocated
         content: |
           apiVersion: install.istio.io/v1alpha1
           kind: IstioOperator
@@ -161,9 +169,10 @@
         group: vagrant
         mode: "0644"
 
+    # NOTE: The shell still does not detect istioctl in path
     - name: Install Istio with custom configuration
-      ansible.builtin.command:
-        cmd: istioctl install -y -f /home/vagrant/istio-config.yaml
+      ansible.builtin.shell:
+        cmd: /home/vagrant/istio-1.25.2/bin/istioctl install -y -f /home/vagrant/istio-config.yaml
       become: false
 
     - name: Wait for Istio pods to be ready
