@@ -106,19 +106,19 @@
         create_namespace: true
       become: false
 
-    - name: Copy dashboard.yml to host
-      become: false
+    - name: Copy Kubernetes manifests to VM
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/k8s/dashboard.yml"
-        dest: /home/vagrant/.kube/dashboard.yml
+        src: "{{ playbook_dir }}/k8s/"
+        dest: /home/vagrant/k8s/
         owner: vagrant
         group: vagrant
         mode: "0644"
+      become: false
 
     - name: Apply dashboard.yml to set up admin user
       become: false
       ansible.builtin.command:
-        cmd: kubectl apply -f /home/vagrant/.kube/dashboard.yml
+        cmd: kubectl apply -f /home/vagrant/k8s/dashboard.yml
 
     # Step 23: Install Istio
     - name: Determine Istio architecture suffix
