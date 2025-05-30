@@ -282,11 +282,11 @@ spec:
     - match:
         - sourceLabels:
             version: v2
-          route:
-            - destination:
-                host: model
-                subset: v2
-        - route:
-            - destination:
-                host: lib
-                subset: v1
+      route:
+        - destination:
+            host: model
+            subset: v2
+    - route:
+        - destination:
+            host: model
+            subset: v1
