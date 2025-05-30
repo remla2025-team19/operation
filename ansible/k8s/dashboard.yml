@@ -13,9 +13,18 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- kind: ServiceAccount
-  name: admin-user
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kubernetes-dashboard
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admin-user-token
   namespace: kubernetes-dashboard
+  annotations:
+    kubernetes.io/service-account.name: admin-user
+type: kubernetes.io/service-account-token
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -28,13 +37,13 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: dashboard.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: kubernetes-dashboard-web
-            port:
-              number: 443
+    - host: dashboard.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kubernetes-dashboard-kong-proxy
+                port:
+                  number: 443
