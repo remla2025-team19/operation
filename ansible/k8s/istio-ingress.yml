@@ -261,6 +261,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
   name: model-dr
+  namespace: default
 spec:
   host: model
   subsets:
@@ -273,6 +274,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: model-vs
+  namespace: default
 spec:
   hosts:
     - model
