@@ -17,11 +17,11 @@
         argv:
           - kubeadm
           - init
-          - --apiserver-advertise-address=192.168.56.100 
+          - --apiserver-advertise-address=192.168.56.100
           - --node-name
           - ctrl
-          - --pod-network-cidr=10.244.0.0/16 
-          - --ignore-preflight-errors=NumCPU  # ignore min 2 cpu error
+          - --pod-network-cidr=10.244.0.0/16
+          - --ignore-preflight-errors=NumCPU # ignore min 2 cpu error
         creates: /etc/kubernetes/admin.conf
       when: not admin_conf.stat.exists
       register: kubeadm_init
@@ -33,7 +33,7 @@
         state: directory
         owner: vagrant
         group: vagrant
-        mode: '0755'
+        mode: "0755"
       when: kubeadm_init.changed or not admin_conf.stat.exists
 
     - name: Copy admin.conf to vagrant user's .kube/config
@@ -43,14 +43,14 @@
         remote_src: yes
         owner: vagrant
         group: vagrant
-        mode: '0600'
+        mode: "0600"
       when: kubeadm_init.changed or not admin_conf.stat.exists
 
     - name: Ensure kube directory exists on host
       ansible.builtin.file:
         path: "{{ playbook_dir }}/../kube"
         state: directory
-        mode: '0755'
+        mode: "0755"
       delegate_to: localhost
       become: false
       run_once: true
@@ -79,7 +79,7 @@
         dest: /home/vagrant/kube-flannel.yml
         owner: vagrant
         group: vagrant
-        mode: '0644'
+        mode: "0644"
 
     - name: Modify flannel config to use eth1 interface
       ansible.builtin.replace:
@@ -88,13 +88,12 @@
         replace: '\1- args:\n\2- --ip-masq\n\3- --kube-subnet-mgr\n\3- --iface=eth1'
       register: flannel_modified
 
-
     # Use failed_when instead of ignore_errors to avoid task being marked as failed, when there is non-zero exit
     - name: Check if flannel is already deployed
       ansible.builtin.command:
         cmd: kubectl get namespace kube-flannel
       register: flannel_check
-      failed_when: false 
+      failed_when: false
       changed_when: false
       become: false
       become_user: vagrant
@@ -117,22 +116,22 @@
       ansible.builtin.apt_key:
         url: https://baltocdn.com/helm/signing.asc
         state: present
-      
+
     - name: Install apt-transport-https
       ansible.builtin.apt:
         name: apt-transport-https
         state: present
-      
+
     - name: Add Helm repository
       ansible.builtin.apt_repository:
         repo: "deb https://baltocdn.com/helm/stable/debian/ all main"
         state: present
         filename: helm-stable-debian
-      
+
     - name: Update apt cache
       ansible.builtin.apt:
         update_cache: yes
-      
+
     - name: Install Helm
       ansible.builtin.apt:
         name: helm
@@ -149,3 +148,11 @@
       changed_when: helm_diff_plugin.rc == 0
       become: false
       become_user: vagrant
+
+    # Install Python Kubernetes library for Ansible
+    - name: Install Python Kubernetes library
+      ansible.builtin.apt:
+        name:
+          - python3-kubernetes
+          - python3-yaml
+        state: present

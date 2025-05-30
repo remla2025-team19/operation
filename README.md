@@ -55,29 +55,33 @@ ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml
 ```bash
 kubectl apply -k kubernetes/
 ```
+
 In case of issues, restart minikube.
+
 ```bash
 minikube stop
 minikube start
 ```
 
 2. To set install Helm
-Run the command
+   Run the command
 
 ```bash
 helm install sentiment-analyzer-1 ./helm/sentiment-analyzer/ --set app.ingress.host=app1.local
 ```
 
 To install another instance for the same cluster, be sure the names are changes. For example,
+
 ```bash
 helm install sentiment-analyzer-2 ./helm/sentiment-analyzer/ --set app.ingress.host=app2.local --set model.service.port=5002
 ```
 
 All the requirements are met:
-- [x] Helm chart `Chart.yaml` exists in `helm/sentiment-analyzer/`
-- [x] Covers the deployment (app-service and model-service) using `helm/sentiment-analyzer/templates`
-- [x] Service name can be changed via `helm/sentiment-analyzer/values.yaml`
-- [x] Helm chart can be installed more than once. All resources use the prefic {{ .Release.Name }}
+
+-   [x] Helm chart `Chart.yaml` exists in `helm/sentiment-analyzer/`
+-   [x] Covers the deployment (app-service and model-service) using `helm/sentiment-analyzer/templates`
+-   [x] Service name can be changed via `helm/sentiment-analyzer/values.yaml`
+-   [x] Helm chart can be installed more than once. All resources use the prefic {{ .Release.Name }}
 
 Install Prometheus and Grafana using the following command:
 
@@ -87,7 +91,77 @@ helm repo update
 ```
 
 Create namespace + CRDs + Prometheus/Alertmanager/Grafana:
+
 ```bash
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace
+```
+
+## Accessing the Sentiment Analyzer Application
+
+After running the finalization playbook, the Sentiment Analyzer app will be available at:
+
+**URL:** http://app.local
+
+### Prerequisites
+
+1. Add the following to your `/etc/hosts` file:
+
+    ```
+    192.168.56.91 app.local
+    ```
+
+## Accessing the Kubernetes Dashboard
+
+After running the finalization playbook, the Kubernetes Dashboard will be available at:
+
+**URL:** https://dashboard.local
+
+### Prerequisites
+
+1. Add the following to your `/etc/hosts` file:
+
+    ```
+    192.168.56.90 dashboard.local
+    ```
+
+2. Get the authentication token (run on the control node):
+
+    ```bash
+    # SSH into the ctrl VM
+    ssh vagrant@192.168.56.100
+
+    # Get the token
+    kubectl -n kubernetes-dashboard get secret admin-user-token -o jsonpath='{.data.token}' | base64 -d
+    ```
+
+3. Copy the token and use it to log into the dashboard at https://dashboard.local
+
+### Alternative Access Methods
+
+**Port Forward (without ingress):**
+
+```bash
+kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8443:443
+```
+
+**Debug service issues:**
+
+```bash
+# Check if dashboard services are running
+kubectl -n kubernetes-dashboard get svc
+
+# Check dashboard pods
+kubectl -n kubernetes-dashboard get pods
+
+# Re-apply dashboard configuration
+kubectl apply -f ansible/k8s/dashboard.yml
+```
+
+Then access via: https://localhost:8443
+
+**Get Token (alternative method):**
+
+```bash
+kubectl -n kubernetes-dashboard create token admin-user
 ```
