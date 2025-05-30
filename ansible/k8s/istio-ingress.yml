@@ -304,6 +304,10 @@ metadata:
   namespace: default
 spec:
   host: app
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        useSourceIp: true
   subsets:
     - name: v1
       labels:
