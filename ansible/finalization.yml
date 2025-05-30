@@ -217,7 +217,7 @@
         state: present
       become: false
 
-    - name: Apply Istio ingress configuration (v1)
+    - name: Apply Istio ingress configuration
       kubernetes.core.k8s:
         src: /home/vagrant/k8s/istio-ingress.yml
         state: present
@@ -225,9 +225,9 @@
         wait_timeout: 180
       become: false
 
-    - name: Wait for app deployments to be ready
+    - name: Wait for app and model deployments to be ready
       ansible.builtin.command:
-        cmd: kubectl wait --for=condition=Available deployment/app-deployment deployment/model-deployment --timeout=300s
+        cmd: kubectl wait --for=condition=Available deployment/app-deployment-v1 deployment/app-deployment-v2 deployment/model-deployment-v1 deployment/model-deployment-v2 --timeout=300s
       become: false
       retries: 3
       delay: 10
