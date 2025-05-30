@@ -97,6 +97,20 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace
 ```
 
+## Accessing the Sentiment Analyzer Application
+
+After running the finalization playbook, the Sentiment Analyzer app will be available at:
+
+**URL:** http://app.local
+
+### Prerequisites
+
+1. Add the following to your `/etc/hosts` file:
+
+    ```
+    192.168.56.91 app.local
+    ```
+
 ## Accessing the Kubernetes Dashboard
 
 After running the finalization playbook, the Kubernetes Dashboard will be available at:
