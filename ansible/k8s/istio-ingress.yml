@@ -18,6 +18,10 @@ spec:
       labels:
         app: model
         version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "5001"
     spec:
       containers:
         - name: model-service
@@ -72,6 +76,10 @@ spec:
       labels:
         app: app
         version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
     spec:
       containers:
         - name: app-service
@@ -116,6 +124,10 @@ spec:
       labels:
         app: model
         version: v2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "5001"
     spec:
       containers:
         - name: model-service
@@ -171,6 +183,10 @@ spec:
       labels:
         app: app
         version: v2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
     spec:
       containers:
         - name: app-service
