@@ -90,7 +90,7 @@
             service:
               loadBalancerIP: 192.168.56.90
       become: false
-    
+
     - name: Wait for ingress-nginx webhook
       ansible.builtin.command:
         cmd: kubectl -n ingress-nginx wait --for=condition=Available deployment/ingress-nginx-controller
@@ -106,24 +106,165 @@
         create_namespace: true
       become: false
 
-    - name: Copy dashboard.yml to host
-      become: false
+    - name: Copy Kubernetes manifests to VM
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/k8s/dashboard.yml"
-        dest: /home/vagrant/.kube/dashboard.yml
+        src: "{{ playbook_dir }}/k8s/"
+        dest: /home/vagrant/k8s/
         owner: vagrant
         group: vagrant
         mode: "0644"
+      become: false
 
     - name: Apply dashboard.yml to set up admin user
       become: false
       ansible.builtin.command:
-        cmd: kubectl apply -f /home/vagrant/.kube/dashboard.yml
+        cmd: kubectl apply -f /home/vagrant/k8s/dashboard.yml
 
-    
+    # Step 23: Install Istio
+    - name: Determine Istio architecture suffix
+      ansible.builtin.set_fact:
+        istio_arch_suffix: "{{ 'amd64' if ansible_facts.architecture == 'x86_64' else 'arm64' if ansible_facts.architecture == 'aarch64' else 'unsupported' }}"
+
+    - name: Fail if architecture is unsupported
+      ansible.builtin.fail:
+        msg: "Unsupported architecture: {{ ansible_facts.architecture }}. Istio download is only configured for x86_64 (amd64) and aarch64 (arm64)."
+      when: istio_arch_suffix == 'unsupported'
+
+    - name: Download Istio 1.25.2
+      ansible.builtin.get_url:
+        url: "https://github.com/istio/istio/releases/download/1.25.2/istio-1.25.2-linux-{{ istio_arch_suffix }}.tar.gz"
+        dest: "/home/vagrant/istio-1.25.2-linux-{{ istio_arch_suffix }}.tar.gz"
+        owner: vagrant
+        group: vagrant
+        mode: "0644"
+
+    - name: Extract Istio
+      ansible.builtin.unarchive:
+        src: "/home/vagrant/istio-1.25.2-linux-{{ istio_arch_suffix }}.tar.gz"
+        dest: /home/vagrant
+        remote_src: true
+        owner: vagrant
+        group: vagrant
+
+    - name: Add istioctl to PATH in .bashrc
+      ansible.builtin.lineinfile:
+        path: /home/vagrant/.bashrc
+        line: 'export PATH="$PATH:/home/vagrant/istio-1.25.2/bin"'
+        state: present
+
+    - name: Create IstioOperator configuration for MetalLB
+      ansible.builtin.copy:
+        dest: /home/vagrant/istio-config.yaml
+        content: |
+          apiVersion: install.istio.io/v1alpha1
+          kind: IstioOperator
+          metadata:
+            name: control-plane
+          spec:
+            values:
+              gateways:
+                istio-ingressgateway:
+                  loadBalancerIP: 192.168.56.91
+        owner: vagrant
+        group: vagrant
+        mode: "0644"
+
+    # NOTE: The shell still does not detect istioctl in path
+    - name: Install Istio with custom configuration
+      ansible.builtin.shell:
+        cmd: /home/vagrant/istio-1.25.2/bin/istioctl install -y -f /home/vagrant/istio-config.yaml
+      become: false
+
+    - name: Wait for Istio pods to be ready
+      ansible.builtin.command:
+        cmd: kubectl -n istio-system wait --for=condition=Available deployment --all --timeout=300s
+      become: false
+
+    - name: Install Istio Prometheus addon
+      kubernetes.core.k8s:
+        src: /home/vagrant/istio-1.25.2/samples/addons/prometheus.yaml
+        state: present
+      become: false
+
+    - name: Install Istio Jaeger addon
+      kubernetes.core.k8s:
+        src: /home/vagrant/istio-1.25.2/samples/addons/jaeger.yaml
+        state: present
+      become: false
+
+    - name: Install Istio Kiali addon
+      kubernetes.core.k8s:
+        src: /home/vagrant/istio-1.25.2/samples/addons/kiali.yaml
+        state: present
+      become: false
+
+    - name: Wait for Istio addons to be ready
+      ansible.builtin.command:
+        cmd: kubectl -n istio-system wait --for=condition=Available deployment --all --timeout=300s
+      become: false
+      ignore_errors: true
+
+    # Configure Istio for Canary Deployment
+    - name: Enable Istio injection on default namespace
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: default
+        definition:
+          metadata:
+            labels:
+              istio-injection: "enabled"
+        state: present
+      become: false
+
+    - name: Apply Istio ingress configuration
+      kubernetes.core.k8s:
+        src: /home/vagrant/k8s/istio-ingress.yml
+        state: present
+        wait: true
+        wait_timeout: 180
+      become: false
+
+    - name: Wait for app deployments to be ready
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        label_selectors:
+          - app=app
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
+      become: false
+
+    - name: Wait for model deployments to be ready
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        label_selectors:
+          - app=model
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
+      become: false
+
+    - name: Verify Istio sidecar injection
+      ansible.builtin.command:
+        cmd: kubectl get pods -l app=app -o jsonpath='{.items[*].status.containerStatuses[*].name}'
+      register: app_containers
+      become: false
+      changed_when: false
+
+    - name: Display app containers with sidecars
+      ansible.builtin.debug:
+        msg: "App containers: {{ app_containers.stdout }}"
+      become: false
 
     # Step 25: Install Helm Chart for Sentiment Analyzer
-    - name: Copy Helm Chart to VM 
+    - name: Copy Helm Chart to VM
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../helm"
         dest: /home/vagrant
@@ -132,43 +273,41 @@
         mode: "0755"
       become: false
 
-    # Step 26:
-    - name: Install Sentiment Analyzer Helm chart
-      kubernetes.core.helm:
-        name: sentiment-analyzer
-        chart_ref: /home/vagrant/helm/sentiment-analyzer
-        release_namespace: default
-        values:
-          model:
-            service:
-              port: 5001
-          app:
-            ingress:
-              host: app.local
-      become: false 
+    # # Step 26:
+    # - name: Install Sentiment Analyzer Helm chart
+    #   kubernetes.core.helm:
+    #     name: sentiment-analyzer
+    #     chart_ref: /home/vagrant/helm/sentiment-analyzer
+    #     release_namespace: default
+    #     values:
+    #       model:
+    #         service:
+    #           port: 5001
+    #       app:
+    #         ingress:
+    #           host: app.local
+    #   become: false
 
+    # - name: Grafana Installation with Helm
+    #   kubernetes.core.helm:
+    #     name: grafana
+    #     chart_ref: grafana
+    #     chart_repo_url: https://grafana.github.io/helm-charts
+    #     release_namespace: grafana
+    #     create_namespace: true
+    #   become: false
 
-    - name: Grafana Installation with Helm
-      kubernetes.core.helm:
-        name: grafana
-        chart_ref: grafana
-        chart_repo_url: https://grafana.github.io/helm-charts
-        release_namespace: grafana
-        create_namespace: true
-      become: false
+    # - name: Copy Grafana dashboard ConfigMap to VM
+    #   ansible.builtin.copy:
+    #     src: "{{ playbook_dir }}/grafana/dashboard-configmap.yaml"
+    #     dest: /home/vagrant/dashboard-configmap.yaml
+    #     owner: vagrant
+    #     group: vagrant
+    #     mode: "0644"
+    #   become: false
 
-    - name: Copy Grafana dashboard ConfigMap to VM
-      ansible.builtin.copy:
-        src: "{{ playbook_dir }}/grafana/dashboard-configmap.yaml"
-        dest: /home/vagrant/dashboard-configmap.yaml
-        owner: vagrant
-        group: vagrant
-        mode: "0644"
-      become: false
-
-    #Auto import grafana dashboard
-    - name: Apply Grafana dashboard ConfigMap
-      ansible.builtin.command:
-        cmd: kubectl apply -f /home/vagrant/dashboard-configmap.yaml  
-      become: false
-
+    # #Auto import grafana dashboard
+    # - name: Apply Grafana dashboard ConfigMap
+    #   ansible.builtin.command:
+    #     cmd: kubectl apply -f /home/vagrant/dashboard-configmap.yaml
+    #   become: false

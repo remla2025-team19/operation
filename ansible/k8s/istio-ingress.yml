@@ -1,0 +1,333 @@
+# istio-ingress.yml - canary release deployment with Istio
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-deployment-v1
+  namespace: default
+  labels:
+    app: model
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: model
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: model
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "5001"
+    spec:
+      containers:
+        - name: model-service
+          image: ghcr.io/remla2025-team19/model-service:0.0.5
+          ports:
+            - containerPort: 5001
+          env:
+            - name: MODEL_VERSION
+              value: "1.0.11"
+            - name: MODEL_SERVICE_PORT
+              value: "5001"
+            - name: MODEL_SERVICE_HOST
+              value: "0.0.0.0"
+            - name: MODEL_ARTIFACT_URL
+              value: "https://github.com/remla2025-team19/model-training/releases/download/v1.0.11/sentiment_model_v1.0.11.pkl"
+            - name: PREDICTION_THRESHOLD
+              value: "0.75"
+            - name: MODEL_CACHE_DIR
+              value: "/models_cache"
+          volumeMounts:
+            - name: model-cache-volume
+              mountPath: /models_cache
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+      volumes:
+        - name: model-cache-volume
+          hostPath:
+            path: /mnt/shared/model_cache
+            type: DirectoryOrCreate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment-v1
+  namespace: default
+  labels:
+    app: app
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: app
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+        - name: app-service
+          image: ghcr.io/remla2025-team19/app-service:0.0.14
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MODEL_SERVICE_URL
+              value: "http://model:5001"
+            - name: APP_LOG_LEVEL
+              value: "info"
+            - name: APP_API_KEY
+              value: "sk-v1-kjdflkaflsdaiuyhcouwiheourh"
+            - name: APP_DB_USER
+              value: "admin"
+            - name: APP_DB_PASSWORD
+              value: "password"
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-deployment-v2
+  namespace: default
+  labels:
+    app: model
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: model
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: model
+        version: v2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "5001"
+    spec:
+      containers:
+        - name: model-service
+          #TODO: set this to a different version tag after creating a prerelease app version
+          image: ghcr.io/remla2025-team19/model-service:latest
+          ports:
+            - containerPort: 5001
+          env:
+            - name: MODEL_VERSION
+              value: "1.0.11"
+            - name: MODEL_SERVICE_PORT
+              value: "5001"
+            - name: MODEL_SERVICE_HOST
+              value: "0.0.0.0"
+            - name: MODEL_ARTIFACT_URL
+              value: "https://github.com/remla2025-team19/model-training/releases/download/v1.0.11/sentiment_model_v1.0.11.pkl"
+            - name: PREDICTION_THRESHOLD
+              value: "0.75"
+            - name: MODEL_CACHE_DIR
+              value: "/models_cache"
+          volumeMounts:
+            - name: model-cache-volume
+              mountPath: /models_cache
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+      volumes:
+        - name: model-cache-volume
+          hostPath:
+            path: /mnt/shared/model_cache
+            type: DirectoryOrCreate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment-v2
+  namespace: default
+  labels:
+    app: app
+    version: v2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: app
+        version: v2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+        - name: app-service
+          #TODO: set this to a different version tag after creating a prerelease app version
+          image: ghcr.io/remla2025-team19/app-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MODEL_SERVICE_URL
+              value: "http://model:5001"
+            - name: APP_LOG_LEVEL
+              value: "info"
+            - name: APP_API_KEY
+              value: "sk-v1-kjdflkaflsdaiuyhcouwiheourh"
+            - name: APP_DB_USER
+              value: "admin"
+            - name: APP_DB_PASSWORD
+              value: "password"
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: model
+  namespace: default
+spec:
+  selector:
+    app: model
+  ports:
+    - name: http
+      port: 5001
+      targetPort: 5001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+  namespace: default
+spec:
+  selector:
+    app: app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: sentiment-gateway
+  namespace: default
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "app.local"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: sentiment-virtual-service
+  namespace: default
+spec:
+  gateways:
+    - sentiment-gateway
+  hosts:
+    - "app.local"
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: app
+            subset: v1
+          weight: 90
+        - destination:
+            host: app
+            subset: v2
+          weight: 10
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: model-dr
+  namespace: default
+spec:
+  host: model
+  subsets:
+    - name: v1
+      labels: { version: v1 }
+    - name: v2
+      labels: { version: v2 }
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: model-vs
+  namespace: default
+spec:
+  hosts:
+    - model
+  http:
+    - match:
+        - sourceLabels:
+            version: v2
+      route:
+        - destination:
+            host: model
+            subset: v2
+    - route:
+        - destination:
+            host: model
+            subset: v1
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: app-dr
+  namespace: default
+spec:
+  host: app
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        useSourceIp: true
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2
