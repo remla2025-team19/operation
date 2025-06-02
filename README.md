@@ -97,13 +97,20 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace
 ```
 
-## Accessing the Sentiment Analyzer Application
+## Assignment 5
+
+```bash
+vagrant up --provision
+ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml
+```
+
+### Accessing the Sentiment Analyzer Application
 
 After running the finalization playbook, the Sentiment Analyzer app will be available at:
 
 **URL:** http://app.local
 
-### Prerequisites
+#### Prerequisites
 
 1. Add the following to your `/etc/hosts` file:
 
@@ -111,13 +118,13 @@ After running the finalization playbook, the Sentiment Analyzer app will be avai
     192.168.56.91 app.local
     ```
 
-## Accessing the Kubernetes Dashboard
+### Accessing the Kubernetes Dashboard
 
 After running the finalization playbook, the Kubernetes Dashboard will be available at:
 
 **URL:** https://dashboard.local
 
-### Prerequisites
+#### Prerequisites
 
 1. Add the following to your `/etc/hosts` file:
 
@@ -137,7 +144,7 @@ After running the finalization playbook, the Kubernetes Dashboard will be availa
 
 3. Copy the token and use it to log into the dashboard at https://dashboard.local
 
-### Alternative Access Methods
+#### Alternative Access Methods
 
 **Port Forward (without ingress):**
 
