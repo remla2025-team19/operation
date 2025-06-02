@@ -1,60 +1,143 @@
+# grafana/dashboard-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: grafana-dashboard
+  name: experiment-dashboard
   namespace: grafana
   labels:
     grafana_dashboard: "1"
 data:
-  app-dashboard.json: |
+  experiment-dashboard.json: |
     {
       "id": null,
-      "title": "App Metrics Dashboard",
+      "title": "Canary Experiment Dashboard",
       "timezone": "browser",
       "schemaVersion": 37,
       "version": 1,
       "refresh": "5s",
       "panels": [
         {
-          "type": "gauge",
-          "title": "Total Requests",
+          "type": "timeseries",
+          "title": "Request Rate by Version",
           "id": 1,
           "datasource": "Prometheus",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
           "targets": [
             {
-              "expr": "app_requests_total",
-              "legendFormat": "requests",
+              "expr": "sum(rate(istio_requests_total{destination_app=\"app\"}[1m])) by (destination_version)",
+              "legendFormat": "{{destination_version}}",
               "refId": "A"
             }
-          ]
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "color": {"mode": "palette-classic"}
+            }
+          }
         },
         {
-          "type": "timeseries",
-          "title": "Request Rate",
+          "type": "stat",
+          "title": "Traffic Distribution (%)",
           "id": 2,
           "datasource": "Prometheus",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
           "targets": [
             {
-              "expr": "rate(app_requests_total[$interval])",
+              "expr": "sum(rate(istio_requests_total{destination_app=\"app\"}[5m])) by (destination_version) / sum(rate(istio_requests_total{destination_app=\"app\"}[5m])) * 100",
+              "legendFormat": "{{destination_version}}",
               "refId": "A"
             }
-          ]
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "color": {"mode": "value"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": 0},
+                  {"color": "yellow", "value": 80},
+                  {"color": "red", "value": 95}
+                ]
+              }
+            }
+          }
         },
         {
           "type": "timeseries",
-          "title": "Model Inference Latency",
+          "title": "Model Response Time by Version (P95)",
           "id": 3,
           "datasource": "Prometheus",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
           "targets": [
             {
-              "expr": "avg(model_latency_seconds)",
+              "expr": "histogram_quantile(0.95, sum(rate(num_requests_bucket{app=\"model\"}[5m])) by (le, version))",
+              "legendFormat": "P95 - {{version}}",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.50, sum(rate(num_requests_bucket{app=\"model\"}[5m])) by (le, version))",
+              "legendFormat": "P50 - {{version}}",
+              "refId": "B"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "color": {"mode": "palette-classic"}
+            }
+          }
+        },
+        {
+          "type": "table",
+          "title": "Error Rate Comparison",
+          "id": 4,
+          "datasource": "Prometheus",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "targets": [
+            {
+              "expr": "sum(rate(istio_requests_total{response_code=~\"5..\"}[5m])) by (destination_version) / sum(rate(istio_requests_total[5m])) by (destination_version) * 100",
+              "format": "table",
               "refId": "A"
             }
-          ]
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": 0},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Custom Model Metrics",
+          "id": 5,
+          "datasource": "Prometheus",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+          "targets": [
+            {
+              "expr": "sum(rate(num_requests{app=\"model\"}[1m])) by (version)",
+              "legendFormat": "Requests/sec - {{version}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "color": {"mode": "palette-classic"}
+            }
+          }
         }
       ],
       "time": {
-        "from": "now-1h",
+        "from": "now-30m",
         "to": "now"
       },
       "templating": {
@@ -64,7 +147,7 @@ data:
             "type": "interval",
             "label": "Timeframe",
             "auto": true,
-            "query": "1m,5m,10m,30m,1h,6h,12h,24h"
+            "query": "1m,5m,10m,30m,1h"
           }
         ]
       }

@@ -172,3 +172,47 @@ Then access via: https://localhost:8443
 ```bash
 kubectl -n kubernetes-dashboard create token admin-user
 ```
+## Continuous Experimentation
+1. Testing the continuous experimentation setup
+```bash
+kubectl get pods -l app=app
+kubectl get pods -l app=model
+kubectl get virtualservices
+kubectl get destinationrules
+
+```
+
+2. Verify Istio sidecar injection
+```bash
+kubectl get pods -l app=app -o jsonpath='{.items[*].status.containerStatuses[*].name}'
+kubectl get pods -l app=model -o jsonpath='{.items[*].status.containerStatuses[*].name}'
+
+```
+
+3. Generate load for metrics testing
+```bash
+# Make the script executable
+chmod +x scripts/generate-experiment-traffic.sh
+
+# Generate traffic for 5 minutes
+./scripts/generate-experiment-traffic.sh
+```
+
+4. Check metrics are being collected
+```bash
+# Port-forward to Prometheus
+kubectl port-forward -n istio-system svc/prometheus 9090:9090 &
+
+# Query metrics (open http://localhost:9090)
+# Test queries:
+# - num_requests{app="model"}
+# - sum(rate(istio_requests_total{destination_app="app"}[1m])) by (destination_version)
+# - histogram_quantile(0.95, sum(rate(num_requests_bucket{app="model"}[5m])) by (le, version))
+
+```
+
+5. Access Dashboards
+```bash
+istioctl dashboard kiali
+istioctl dashboard prometheus
+```
