@@ -22,3 +22,5 @@ The dashboard can be visualised automatically or manually.
 - You can also automatically deploy it via a ConfigMap by applying: 
 ```bash
 kubectl apply -f ansible/grafana/dashboard-configmap.yaml
+
+ansible-playbook -u vagrant -i 192.168.56.100, finalization.yml
