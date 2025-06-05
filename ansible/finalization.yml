@@ -17,31 +17,41 @@
 
     # Use failed_when instead of ignore_errors to avoid fail tasks
     - name: Check if MetalLB is already deployed
-      ansible.builtin.command:
-        cmd: kubectl get namespace metallb-system
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: metallb-system
       register: metallb_check
       failed_when: false
-      changed_when: false
       become: false
 
-    - name: Print metallb_check return code
+    - name: Print metallb_check status
       ansible.builtin.debug:
-        msg: "Return code: {{ metallb_check.rc }} (0 means namespace exists, 1 means not found)"
+        msg: "MetalLB namespace {{ 'exists' if metallb_check.resources else 'not found' }}"
       become: false
 
     - name: Apply MetalLB manifest
-      ansible.builtin.command:
-        cmd: kubectl apply -f /home/vagrant/metallb-native.yaml
-      when: metallb_check.rc != 0
+      kubernetes.core.k8s:
+        src: /home/vagrant/metallb-native.yaml
+        state: present
+      when: not metallb_check.resources
       become: false
 
     - name: Wait for MetalLB pods to be ready
-      ansible.builtin.command:
-        cmd: kubectl -n metallb-system wait -l app=metallb,component=controller --for=condition=Ready pods --all --timeout=60s
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: metallb-system
+        label_selectors:
+          - app=metallb
+          - component=controller
+        wait: true
+        wait_condition:
+          type: Ready
+          status: "True"
+        wait_timeout: 60
       become: false
-      register: metallb_pods_ready
-      changed_when: false
-      when: metallb_check.rc != 0
+      when: not metallb_check.resources
       ignore_errors: true
       retries: 3
       delay: 10
@@ -72,8 +82,9 @@
         mode: "0644"
 
     - name: Apply MetalLB configuration
-      ansible.builtin.command:
-        cmd: kubectl apply -f /home/vagrant/metallb-config.yaml
+      kubernetes.core.k8s:
+        src: /home/vagrant/metallb-config.yaml
+        state: present
       become: false
 
     # Step 21
@@ -92,8 +103,16 @@
       become: false
 
     - name: Wait for ingress-nginx webhook
-      ansible.builtin.command:
-        cmd: kubectl -n ingress-nginx wait --for=condition=Available deployment/ingress-nginx-controller
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: ingress-nginx-controller
+        namespace: ingress-nginx
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
       become: false
 
     # Step 22
@@ -116,9 +135,10 @@
       become: false
 
     - name: Apply dashboard.yml to set up admin user
+      kubernetes.core.k8s:
+        src: /home/vagrant/k8s/dashboard.yml
+        state: present
       become: false
-      ansible.builtin.command:
-        cmd: kubectl apply -f /home/vagrant/k8s/dashboard.yml
 
     # Step 23: Install Istio
     - name: Determine Istio architecture suffix
@@ -176,8 +196,15 @@
       become: false
 
     - name: Wait for Istio pods to be ready
-      ansible.builtin.command:
-        cmd: kubectl -n istio-system wait --for=condition=Available deployment --all --timeout=300s
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        namespace: istio-system
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
       become: false
 
     - name: Install Istio Prometheus addon
@@ -199,8 +226,15 @@
       become: false
 
     - name: Wait for Istio addons to be ready
-      ansible.builtin.command:
-        cmd: kubectl -n istio-system wait --for=condition=Available deployment --all --timeout=300s
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        namespace: istio-system
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
       become: false
       ignore_errors: true
 
@@ -252,16 +286,19 @@
       become: false
 
     - name: Verify Istio sidecar injection
-      ansible.builtin.command:
-        cmd: kubectl get pods -l app=app -o jsonpath='{.items[*].status.containerStatuses[*].name}'
-      register: app_containers
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        label_selectors:
+          - app=app
+      register: app_pods
       become: false
-      changed_when: false
 
     - name: Display app containers with sidecars
       ansible.builtin.debug:
-        msg: "App containers: {{ app_containers.stdout }}"
+        msg: "App containers: {{ app_pods.resources | map(attribute='status.containerStatuses') | flatten | map(attribute='name') | list | join(', ') }}"
       become: false
+      when: app_pods.resources | length > 0
 
     # Step 25: Install Helm Chart for Sentiment Analyzer
     - name: Copy Helm Chart to VM
