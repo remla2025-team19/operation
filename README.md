@@ -96,6 +96,33 @@ Create namespace + CRDs + Prometheus/Alertmanager/Grafana:
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace
 ```
+3. Grafana 
+
+Start up the kubernetes cluster by running:
+
+``` vagrant up ```
+
+Set up the environment by running:
+
+``` ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml ```
+
+Install ```kube-prometheus-stack``` using Helm by running:
+``` ansible-playbook -u vagrant -i 192.168.56.100, ansible/monitoring.yml ```
+
+To access the Grafana UI, port forward by running:
+``` kubectl --kubeconfig ansible/kubeconfig/config port-forward svc/monitoring-grafana 3000:80 -n monitoring ```
+
+Then visit:
+```http://localhost:3000```
+
+Log in with the following default credentials:
+```username: admin
+password: prom-operator```
+
+Click on the ```+``` on the top of the screen to ```import``` the ```dashboard-config.json``` file.
+
+
+
 
 ## Assignment 5
 

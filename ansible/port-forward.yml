@@ -1,0 +1,13 @@
+- name: Port forward Grafana
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Check if tunnel is already running
+      ansible.builtin.shell: pgrep -f "ssh.*3000:localhost:3000.*vagrant@192.168.56.100"
+      register: tunnel_check
+      ignore_errors: yes
+
+    - name: Start SSH tunnel to forward Grafana
+      ansible.builtin.shell: >
+        ssh -f -N -L 3000:localhost:3000 vagrant@192.168.56.100
+      when: tunnel_check.rc != 0

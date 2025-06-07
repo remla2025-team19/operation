@@ -271,7 +271,7 @@
         owner: vagrant
         group: vagrant
         mode: "0755"
-      become: false
+
 
     # # Step 26:
     # - name: Install Sentiment Analyzer Helm chart
