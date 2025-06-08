@@ -98,14 +98,6 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
 ```
 3. Grafana 
 
-Start up the kubernetes cluster by running:
-
-``` vagrant up ```
-
-Set up the environment by running:
-
-``` ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml ```
-
 Install ```kube-prometheus-stack``` using Helm by running:
 ``` ansible-playbook -u vagrant -i 192.168.56.100, ansible/monitoring.yml ```
 
