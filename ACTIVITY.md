@@ -93,7 +93,14 @@ Approved PR: https://github.com/remla2025-team19/model-training/pull/7 (related 
 
 -- Victor: --
 Created PR: https://github.com/remla2025-team19/operation/pull/13 (related to A5)
+Nothing to review
 
 -- Siddharth --
 Created PR: https://github.com/remla2025-team19/operation/pull/14 (related to A5)
 Approved PR: https://github.com/remla2025-team19/operation/pull/13 (related to A5)
+
+# Week 7:
+
+-- Victor: --
+Created PR: https://github.com/remla2025-team19/operation/pull/15 (related to A5)
+Approved PR: https://github.com/remla2025-team19/operation/pull/16
