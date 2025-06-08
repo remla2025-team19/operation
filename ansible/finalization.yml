@@ -259,20 +259,18 @@
         wait_timeout: 180
       become: false
 
-    - name: Deploy rate limiting service (Redis + RateLimit)
-      kubernetes.core.k8s:
-        src: /home/vagrant/k8s/rate-limit-service.yml
-        state: present
-        wait: true
-        wait_timeout: 180
-      become: false
-
     - name: Apply Istio rate limiting configuration
       kubernetes.core.k8s:
         src: /home/vagrant/k8s/istio-rate-limit.yml
         state: present
         wait: true
         wait_timeout: 180
+      become: false
+
+    - name: Deploy rate limiting service (Redis + RateLimit)
+      kubernetes.core.k8s:
+        src: /home/vagrant/k8s/rate-limit-service.yml
+        state: present
       become: false
 
     - name: Wait for app deployments to be ready
