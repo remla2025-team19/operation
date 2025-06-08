@@ -79,7 +79,6 @@ spec:
                 - request_headers:
                     header_name: "X-User"
                     descriptor_key: "USER_ID"
-                    default_value: "anonymous"
                 - request_headers:
                     header_name: ":path"
                     descriptor_key: "PATH"
