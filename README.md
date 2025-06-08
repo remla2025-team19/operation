@@ -120,9 +120,7 @@ After running the finalization playbook, the Sentiment Analyzer app will be avai
 
 ### Accessing the Kubernetes Dashboard
 
-After running the finalization playbook, the Kubernetes Dashboard will be available at:
-
-**URL:** https://dashboard.local
+After running the finalization playbook, the Kubernetes Dashboard will be available at https://dashboard.local (_https is important_):
 
 #### Prerequisites
 
@@ -138,7 +136,10 @@ After running the finalization playbook, the Kubernetes Dashboard will be availa
     # SSH into the ctrl VM
     ssh vagrant@192.168.56.100
 
-    # Get the token
+    # Generate a fresh token
+    kubectl -n kubernetes-dashboard create token admin-user --duration=8760h
+
+    # Or get the long-lasting token from secret
     kubectl -n kubernetes-dashboard get secret admin-user-token -o jsonpath='{.data.token}' | base64 -d
     ```
 
