@@ -155,11 +155,11 @@ spec:
             - containerPort: 6070
           resources:
             limits:
-              memory: "512Mi"
-              cpu: "500m"
-            requests:
               memory: "256Mi"
-              cpu: "250m"
+              cpu: "200m"
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
           volumeMounts:
             - name: config-volume
               mountPath: /data/ratelimit/config

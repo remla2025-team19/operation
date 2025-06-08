@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
       node.vm.hostname = "node-#{i}"
       node.vm.network "private_network", ip: "192.168.56.#{100 + i}"
       node.vm.provider "virtualbox" do |vb|
-        vb.cpus = 2
+        vb.cpus = 4
         vb.memory = 6144
       end
       node.vm.provision "ansible" do |ansible|
