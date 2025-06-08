@@ -116,6 +116,14 @@
       become: false
 
     # Step 22
+    - name: Check if Kubernetes Dashboard is already installed
+      kubernetes.core.helm_info:
+        name: kubernetes-dashboard
+        release_namespace: kubernetes-dashboard
+      register: dashboard_check
+      failed_when: false
+      become: false
+
     - name: Install Kubernetes Dashboard with helm
       kubernetes.core.helm:
         name: kubernetes-dashboard
@@ -123,6 +131,13 @@
         chart_repo_url: https://kubernetes.github.io/dashboard/
         release_namespace: kubernetes-dashboard
         create_namespace: true
+        release_values:
+          app:
+            settings:
+              authMode: token
+          auth:
+            mode: token
+      when: dashboard_check.status is not defined or dashboard_check.status.status != "deployed"
       become: false
 
     - name: Copy Kubernetes manifests to VM
