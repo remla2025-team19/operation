@@ -116,8 +116,8 @@ Then visit:
 ```http://localhost:3000```
 
 Log in with the following default credentials:
-```username: admin
-password: prom-operator```
+```username: admin```
+```password: prom-operator```
 
 Click on the ```+``` on the top of the screen to ```import``` the ```dashboard-config.json``` file.
 
