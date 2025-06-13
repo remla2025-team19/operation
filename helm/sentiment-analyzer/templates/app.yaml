@@ -70,26 +70,6 @@ spec:
     targetPort: {{ .Values.app.service.targetPort }}
   type: ClusterIP
 ---
-{{- if .Values.app.ingress.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ .Release.Name }}-app-ingress
-spec:
-  ingressClassName: {{ .Values.app.ingress.className }}
-  rules:
-  - host: {{ .Values.app.ingress.host }}
-    http:
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-app-service
-              port:
-                number: {{ .Values.app.service.port }}
-{{- end }}
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -107,5 +87,3 @@ type: Opaque
 data:
   API_KEY: {{ .Values.app.secrets.apiKey }}
   DB_PASSWORD: {{ .Values.app.secrets.dbPassword }}
-
-

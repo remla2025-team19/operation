@@ -32,8 +32,6 @@ app:
     port: 80
     targetPort: 8000
   ingress:
-    enabled: true
-    className: nginx
     host: app.local
   config:
     logLevel: "info"
