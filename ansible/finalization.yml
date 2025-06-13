@@ -266,13 +266,7 @@
         state: present
       become: false
 
-    - name: Apply Istio ingress configuration
-      kubernetes.core.k8s:
-        src: /home/vagrant/k8s/istio-ingress.yml
-        state: present
-        wait: true
-        wait_timeout: 180
-      become: false
+      # TODO: install helm chart here
 
     - name: Apply Istio rate limiting configuration
       kubernetes.core.k8s:
