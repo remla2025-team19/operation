@@ -1,18 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-model-deployment
+  name: {{ .Release.Name }}-model-deployment-v1
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-model
+    version: v1
 spec:
   replicas: {{ .Values.model.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-model
+      version: v1
   template:
     metadata:
       labels:
         app: {{ .Release.Name }}-model
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9100" # TODO: is this correct?
     spec:
       containers:
         - name: model-service
@@ -68,10 +76,88 @@ spec:
             path: {{ .Values.storage.modelCache.path }}
             type: DirectoryOrCreate
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-model-deployment-v2
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}-model
+    version: v2
+spec:
+  replicas: {{ .Values.model.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-model
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-model
+        version: v2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9100" # TODO: is this correct?
+    spec:
+      containers:
+        - name: model-service
+          image: {{ .Values.model.image.repository }}:{{ .Values.model.image.tag.v2 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.model.service.port }}
+            - name: metrics
+              containerPort: 9100
+          env:
+            - name: MODEL_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: MODEL_VERSION
+            - name: MODEL_SERVICE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: MODEL_SERVICE_PORT
+            - name: MODEL_SERVICE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: MODEL_SERVICE_HOST
+            - name: MODEL_ARTIFACT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: MODEL_ARTIFACT_URL
+            - name: PREDICTION_THRESHOLD
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-model-config
+                  key: PREDICTION_THRESHOLD
+            - name: MODEL_CACHE_DIR
+              value: "/model_cache"
+          volumeMounts:
+            - name: model-cache-volume
+              mountPath: /models_cache
+          resources:
+{{- with .Values.model.resources }}
+            limits:
+              memory: {{ .limits.memory | quote }}
+              cpu: {{ .limits.cpu | quote }}
+            requests:
+              memory: {{ .requests.memory | quote }}
+              cpu: {{ .requests.cpu | quote }}
+{{- end }}
+      volumes:
+        - name: model-cache-volume
+          hostPath:
+            path: {{ .Values.storage.modelCache.path }}
+            type: DirectoryOrCreate
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-model
+  name: {{ .Release.Name }}-model-service
   labels:
     app: {{ .Release.Name }}-model
 spec:
