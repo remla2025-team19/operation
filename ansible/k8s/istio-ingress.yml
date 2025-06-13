@@ -267,9 +267,15 @@ spec:
     - "app.local"
   http:
     - match:
-        - uri:
-            prefix: /
+        - headers:
+            X-Experiment:
+              exact: "canary"
       route:
+        - destination:
+            host: app
+            subset: v2
+          weight: 100
+    - route:
         - destination:
             host: app
             subset: v1
@@ -330,34 +336,5 @@ spec:
   - name: v2
     labels: { version: v2 }
 ---
-# Update your existing VirtualService to use header-based routing
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: sentiment-virtual-service
-  namespace: default
-spec:
-  gateways:
-  - sentiment-gateway
-  hosts:
-  - "app.local"
-  http:
-  - match:
-    - headers:
-        X-Experiment:
-          exact: "canary"
-    route:
-    - destination:
-        host: app
-        subset: v2
-      weight: 100
-  - route:
-    - destination:
-        host: app
-        subset: v1
-      weight: 90
-    - destination:
-        host: app
-        subset: v2
-      weight: 10
+
 

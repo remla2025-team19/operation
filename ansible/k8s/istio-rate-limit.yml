@@ -1,0 +1,84 @@
+# Rate limiting configuration for sentiment analysis app
+# Limits users to 10 requests per minute based on X-User header
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+  namespace: default
+data:
+  config.yaml: |
+    domain: ratelimit
+    descriptors:
+      - key: USER_ID
+        rate_limit:
+          unit: minute
+          requests_per_unit: 10
+      - key: PATH
+        rate_limit:
+          unit: minute
+          requests_per_unit: 100
+---
+# EnvoyFilter to enable global rate limiting on ingressgateway
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.ratelimit
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
+            domain: ratelimit
+            failure_mode_deny: true
+            timeout: 10s
+            rate_limit_service:
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: outbound|8081||ratelimit.default.svc.cluster.local
+                  authority: ratelimit.default.svc.cluster.local
+              transport_api_version: V3
+---
+# EnvoyFilter to define rate limiting actions based on X-User header
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit-svc
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: VIRTUAL_HOST
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            name: ""
+      patch:
+        operation: MERGE
+        value:
+          rate_limits:
+            - actions:
+                - request_headers:
+                    header_name: "X-User"
+                    descriptor_key: "USER_ID"
+                - request_headers:
+                    header_name: ":path"
+                    descriptor_key: "PATH"
