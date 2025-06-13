@@ -1,22 +1,95 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-app-deployment
+  name: {{ .Release.Name }}-app-deployment-v1
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-app
+    version: v1
 spec:
     replicas: {{ .Values.app.replicaCount }}
     selector:
       matchLabels:
         app: {{ .Release.Name }}-app
+        version: v1
     template:
       metadata:
         labels:
           app: {{ .Release.Name }}-app
+          version: v1
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/path: "/metrics"
+          prometheus.io/port: {{ .Values.app.service.targetPort }} # Assuming the app exposes metrics on the target port
       spec:
         containers:
           - name: app-service
             image: {{ .Values.app.image.repository }}:{{ .Values.app.image.tag.v1 }}
+            ports:
+              - containerPort: {{ .Values.app.service.targetPort }}
+            env:
+              - name: MODEL_SERVICE_URL
+                valueFrom:
+                  configMapKeyRef: 
+                    name: {{ .Release.Name }}-app-config
+                    key: MODEL_SERVICE_URL
+              - name: APP_LOG_LEVEL
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ .Release.Name }}-app-config
+                    key: LOG_LEVEL
+              - name: APP_DB_USER
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ .Release.Name }}-app-config
+                    key: DB_USER
+              - name: APP_API_KEY
+                valueFrom: 
+                  secretKeyRef:
+                    name: {{ .Release.Name }}-app-credentials
+                    key: API_KEY
+              - name: APP_DB_PASSWORD
+                valueFrom:
+                  secretKeyRef: 
+                    name: {{.Release.Name}}-app-credentials
+                    key: DB_PASSWORD
+            resources:
+              {{- with .Values.app.resources}}
+              limits:
+                memory: {{ .limits.memory | quote }}
+                cpu: {{ .limits.cpu | quote }}
+              requests:
+                memory: {{ .requests.memory | quote }}
+                cpu: {{ .requests.cpu | quote }}
+              {{- end}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app-deployment-v2
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}-app
+    version: v2
+spec:
+    replicas: {{ .Values.app.replicaCount }}
+    selector:
+      matchLabels:
+        app: {{ .Release.Name }}-app
+        version: v2
+    template:
+      metadata:
+        labels:
+          app: {{ .Release.Name }}-app
+          version: v2
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/path: "/metrics"
+          prometheus.io/port: {{ .Values.app.service.targetPort }} # Assuming the app exposes metrics on the target port
+      spec:
+        containers:
+          - name: app-service
+            image: {{ .Values.app.image.repository }}:{{ .Values.app.image.tag.v2 }}
             ports:
               - containerPort: {{ .Values.app.service.targetPort }}
             env:
