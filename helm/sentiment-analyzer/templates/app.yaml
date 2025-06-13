@@ -1,59 +1,70 @@
+{{- range $version := keys $.Values.app.image.tag }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-app-deployment
+  name: {{ $.Release.Name }}-app-deployment-{{ $version }}
+  namespace: {{ $.Release.Namespace }}
   labels:
-    app: {{ .Release.Name }}-app
+    app: {{ $.Release.Name }}-app
+    version: {{ $version }}
 spec:
-    replicas: {{ .Values.app.replicaCount }}
-    selector:
-      matchLabels:
-        app: {{ .Release.Name }}-app
-    template:
-      metadata:
-        labels:
-          app: {{ .Release.Name }}-app
-      spec:
-        containers:
-          - name: app-service
-            image: {{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}
-            ports:
-              - containerPort: {{ .Values.app.service.targetPort }}
-            env:
-              - name: MODEL_SERVICE_URL
-                valueFrom: 
-                  configMapKeyRef: 
-                    name: {{ .Release.Name }}-app-config
-                    key: MODEL_SERVICE_URL
-              - name: APP_LOG_LEVEL
-                valueFrom:
-                  configMapKeyRef:
-                    name: {{ .Release.Name }}-app-config
-                    key: LOG_LEVEL
-              - name: APP_DB_USER
-                valueFrom:
-                  configMapKeyRef:
-                    name: {{ .Release.Name }}-app-config
-                    key: DB_USER
-              - name: APP_API_KEY
-                valueFrom: 
-                  secretKeyRef:
-                    name: {{ .Release.Name }}-app-credentials
-                    key: API_KEY
-              - name: APP_DB_PASSWORD
-                valueFrom:
-                  secretKeyRef: 
-                    name: {{.Release.Name}}-app-credentials
-                    key: DB_PASSWORD
-            resources:
-              {{- with .Values.app.resources}}
-              limits:
-                memory: {{ .limits.memory | quote }}
-                cpu: {{ .limits.cpu | quote }}
-              requests:
-                memory: {{ .requests.memory | quote }}
-                cpu: {{ .requests.cpu | quote }}
-              {{- end}}
+  replicas: {{ $.Values.app.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-app
+      version: {{ $version }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-app
+        version: {{ $version }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: {{ $.Values.app.service.targetPort | quote }}
+    spec:
+      containers:
+        - name: app-service
+          image: {{ $.Values.app.image.repository }}:{{ index $.Values.app.image.tag $version }}
+          ports:
+            - containerPort: {{ $.Values.app.service.targetPort }}
+          env:
+            - name: MODEL_SERVICE_URL
+              valueFrom:
+                configMapKeyRef: 
+                  name: {{ $.Release.Name }}-app-config
+                  key: MODEL_SERVICE_URL
+            - name: APP_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $.Release.Name }}-app-config
+                  key: LOG_LEVEL
+            - name: APP_DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $.Release.Name }}-app-config
+                  key: DB_USER
+            - name: APP_API_KEY
+              valueFrom: 
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-app-credentials
+                  key: API_KEY
+            - name: APP_DB_PASSWORD
+              valueFrom:
+                secretKeyRef: 
+                  name: {{ $.Release.Name }}-app-credentials
+                  key: DB_PASSWORD
+          resources:
+            {{- with $.Values.app.resources }}
+            limits:
+              memory: {{ .limits.memory | quote }}
+              cpu: {{ .limits.cpu | quote }}
+            requests:
+              memory: {{ .requests.memory | quote }}
+              cpu: {{ .requests.cpu | quote }}
+            {{- end }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -69,26 +80,6 @@ spec:
     port: {{ .Values.app.service.port }}
     targetPort: {{ .Values.app.service.targetPort }}
   type: ClusterIP
----
-{{- if .Values.app.ingress.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ .Release.Name }}-app-ingress
-spec:
-  ingressClassName: {{ .Values.app.ingress.className }}
-  rules:
-  - host: {{ .Values.app.ingress.host }}
-    http:
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-app-service
-              port:
-                number: {{ .Values.app.service.port }}
-{{- end }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -107,5 +98,3 @@ type: Opaque
 data:
   API_KEY: {{ .Values.app.secrets.apiKey }}
   DB_PASSWORD: {{ .Values.app.secrets.dbPassword }}
-
-

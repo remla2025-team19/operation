@@ -266,12 +266,28 @@
         state: present
       become: false
 
-    - name: Apply Istio ingress configuration
-      kubernetes.core.k8s:
-        src: /home/vagrant/k8s/istio-ingress.yml
-        state: present
-        wait: true
-        wait_timeout: 180
+      # TODO: install helm chart here
+    - name: Copy Helm Chart to VM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../helm"
+        dest: /home/vagrant
+        owner: vagrant
+        group: vagrant
+        mode: "0755"
+      become: false
+
+    - name: Install Sentiment Analyzer Helm chart
+      kubernetes.core.helm:
+        name: sentiment-analyzer
+        chart_ref: /home/vagrant/helm/sentiment-analyzer
+        release_namespace: default
+        values:
+          model:
+            service:
+              port: 5001
+          app:
+            ingress:
+              host: app.local
       become: false
 
     - name: Deploy and configure rate limit service
@@ -323,31 +339,6 @@
       become: false
       when: app_pods.resources | length > 0
 
-    # Step 25: Install Helm Chart for Sentiment Analyzer
-    - name: Copy Helm Chart to VM
-      ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../helm"
-        dest: /home/vagrant
-        owner: vagrant
-        group: vagrant
-        mode: "0755"
-      become: false
-
-    # # Step 26:
-    # - name: Install Sentiment Analyzer Helm chart
-    #   kubernetes.core.helm:
-    #     name: sentiment-analyzer
-    #     chart_ref: /home/vagrant/helm/sentiment-analyzer
-    #     release_namespace: default
-    #     values:
-    #       model:
-    #         service:
-    #           port: 5001
-    #       app:
-    #         ingress:
-    #           host: app.local
-    #   become: false
-
     # - name: Grafana Installation with Helm
     #   kubernetes.core.helm:
     #     name: grafana
@@ -370,4 +361,4 @@
     # - name: Apply Grafana dashboard ConfigMap
     #   ansible.builtin.command:
     #     cmd: kubectl apply -f /home/vagrant/dashboard-configmap.yaml
-    #   become: false
+    #   become: falsev
