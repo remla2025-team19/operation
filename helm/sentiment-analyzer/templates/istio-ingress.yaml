@@ -1,0 +1,96 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+    name: {{ .Release.Name }}-sentiment-gateway
+    namespace: {{ .Release.Namespace }}
+spec:
+    selector:
+        istio: ingressgateway
+    servers:
+        - port:
+              number: 80
+              name: http
+              protocol: HTTP
+          hosts:
+              - {{ .Values.app.ingress.host | quote }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+    name: {{ .Release.Name }}-sentiment-virtual-service
+    namespace:  {{ .Release.Namespace }}
+spec:
+    gateways:
+        - {{ .Release.Name }}-sentiment-gateway
+    hosts:
+        - {{ .Values.app.ingress.host | quote }}
+    http:
+        - match:
+              - headers:
+                    X-Experiment:
+                        exact: 'canary'
+          route:
+              - destination:
+                    host: {{ .Release.Name }}-app-service
+                    subset: v2
+                weight: 100
+        - route:
+              - destination:
+                    host: {{ .Release.Name }}-app-service
+                    subset: v1
+                weight: 90
+              - destination:
+                    host: {{ .Release.Name }}-app-service
+                    subset: v2
+                weight: 10
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+    name: {{ .Release.Name }}-model-dr
+    namespace: {{ .Release.Namespace }}
+spec:
+    host: {{ .Release.Name }}-model-service
+    subsets:
+        - name: v1
+          labels: { version: v1 }
+        - name: v2
+          labels: { version: v2 }
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+    name: {{ .Release.Name }}-model-vs
+    namespace: {{ .Release.Namespace }}
+spec:
+    hosts:
+        - {{ .Release.Name }}-model-service
+    http:
+        - match:
+              - sourceLabels:
+                    version: v2
+          route:
+              - destination:
+                    host: {{ .Release.Name }}-model-service
+                    subset: v2
+        - route:
+              - destination:
+                    host: {{ .Release.Name }}-model-service
+                    subset: v1
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+    name: {{ .Release.Name }}-app-dr
+    namespace: {{ .Release.Namespace }}
+spec:
+    host: {{ .Release.Name }}-app-service
+    trafficPolicy:
+        loadBalancer:
+            consistentHash:
+                httpHeaderName: 'X-User' # Sticky sessions based on user header
+    subsets:
+        - name: v1
+          labels: { version: v1 }
+        - name: v2
+          labels: { version: v2 }
