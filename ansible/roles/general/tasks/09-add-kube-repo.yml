@@ -3,6 +3,7 @@
 - name: "Step 9.1: Download Kubernetes signing key (ASCII)"
   ansible.builtin.apt_key:
     url: https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key
+    # keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     state: present
 
 
