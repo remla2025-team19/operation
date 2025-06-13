@@ -1,5 +1,3 @@
-# Rate limiting configuration for sentiment analysis app
-# Limits users to 10 requests per minute based on X-User header
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,7 +7,7 @@ data:
   config.yaml: |
     domain: ratelimit
     descriptors:
-      - key: USER_ID
+      - key: USERID
         rate_limit:
           unit: minute
           requests_per_unit: 10
@@ -18,7 +16,138 @@ data:
           unit: minute
           requests_per_unit: 100
 ---
-# EnvoyFilter to enable global rate limiting on ingressgateway
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: default
+  labels:
+    app: redis
+spec:
+  ports:
+    - name: redis
+      port: 6379
+  selector:
+    app: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - image: redis:alpine
+          imagePullPolicy: IfNotPresent
+          name: redis
+          ports:
+            - name: redis
+              containerPort: 6379
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+      restartPolicy: Always
+      serviceAccountName: ""
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ratelimit
+  namespace: default
+  labels:
+    app: ratelimit
+spec:
+  ports:
+    - name: http-port
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: grpc-port
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+    - name: http-debug
+      port: 6070
+      targetPort: 6070
+      protocol: TCP
+  selector:
+    app: ratelimit
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratelimit
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ratelimit
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ratelimit
+    spec:
+      containers:
+        - image: envoyproxy/ratelimit:30a4ce1a # 2024/08/01
+          imagePullPolicy: IfNotPresent
+          name: ratelimit
+          command: ["/bin/ratelimit"]
+          env:
+            - name: LOG_LEVEL
+              value: debug
+            - name: REDIS_SOCKET_TYPE
+              value: tcp
+            - name: REDIS_URL
+              value: redis:6379
+            - name: USE_STATSD
+              value: "false"
+            - name: RUNTIME_ROOT
+              value: /data
+            - name: RUNTIME_SUBDIRECTORY
+              value: ratelimit
+            - name: RUNTIME_WATCH_ROOT
+              value: "false"
+            - name: RUNTIME_IGNOREDOTFILES
+              value: "true"
+            - name: HOST
+              value: "::"
+            - name: GRPC_HOST
+              value: "::"
+          ports:
+            - containerPort: 8080
+            - containerPort: 8081
+            - containerPort: 6070
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /data/ratelimit/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: ratelimit-config
+---
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -54,7 +183,6 @@ spec:
                   authority: ratelimit.default.svc.cluster.local
               transport_api_version: V3
 ---
-# EnvoyFilter to define rate limiting actions based on X-User header
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -71,6 +199,8 @@ spec:
         routeConfiguration:
           vhost:
             name: ""
+            route:
+              action: ANY
       patch:
         operation: MERGE
         value:
@@ -78,7 +208,8 @@ spec:
             - actions:
                 - request_headers:
                     header_name: "X-User"
-                    descriptor_key: "USER_ID"
+                    descriptor_key: "USERID"
+            - actions:
                 - request_headers:
                     header_name: ":path"
                     descriptor_key: "PATH"
