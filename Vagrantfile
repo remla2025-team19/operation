@@ -1,5 +1,6 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-24.04"
+  config.ssh.insert_key = false
   num_workers = 2
   ctrl_cpus = 1
   ctrl_memory = 4096
@@ -15,17 +16,20 @@ Vagrant.configure("2") do |config|
     (1..num_workers).each do |i|
       f.write("node-#{i} ansible_host=#{base_ip}#{100 + i}\n")
     end
+    f.write("\n[all:vars]\n")
+    f.write("ansible_user=vagrant\n")
+    f.write("ansible_ssh_private_key_file=~/.vagrant.d/insecure_private_key\n")
   end
 
   # Shared provisioning config (fix: pass extra_vars here too)
-  config.vm.provision "ansible" do |ansible|
-    ansible.compatibility_mode = "2.0"
-    ansible.playbook = "ansible/general.yml"
-    ansible.inventory_path = "ansible/inventory.cfg"
-    ansible.extra_vars = {
-      num_workers: num_workers
-    }
-  end
+  # config.vm.provision "ansible" do |ansible|
+  #   ansible.compatibility_mode = "2.0"
+  #   ansible.playbook = "ansible/general.yml"
+  #   ansible.inventory_path = "ansible/inventory.cfg"
+  #   ansible.extra_vars = {
+  #     num_workers: num_workers
+  #   }
+  # end
 
   # Controller
   config.vm.define "ctrl" do |ctrl|
@@ -35,13 +39,13 @@ Vagrant.configure("2") do |config|
       vb.cpus = ctrl_cpus
       vb.memory = ctrl_memory
     end
-    ctrl.vm.provision "ansible" do |ansible|
-      ansible.compatibility_mode = "2.0"
-      ansible.playbook = "ansible/ctrl.yml"
-      ansible.extra_vars = {
-        num_workers: num_workers
-      }
-    end
+    # ctrl.vm.provision "ansible" do |ansible|
+    #   ansible.compatibility_mode = "2.0"
+    #   ansible.playbook = "ansible/ctrl.yml"
+    #   ansible.extra_vars = {
+    #     num_workers: num_workers
+    #   }
+    # end
   end
 
   # Workers
@@ -53,12 +57,37 @@ Vagrant.configure("2") do |config|
         vb.cpus = worker_cpus
         vb.memory = worker_memory
       end
-      node.vm.provision "ansible" do |ansible|
-        ansible.compatibility_mode = "2.0"
-        ansible.playbook = "ansible/node.yml"
-        ansible.extra_vars = {
-          num_workers: num_workers
-        }
+
+      if i == num_workers
+        node.vm.provision "ansible" do |ansible|
+          ansible.compatibility_mode = "2.0"
+          ansible.playbook = "ansible/general.yml"
+          ansible.inventory_path = "ansible/inventory.cfg"
+          ansible.limit = "all"
+          ansible.extra_vars = {
+            num_workers: num_workers
+          }
+        end
+
+        node.vm.provision "ansible" do |ansible|
+          ansible.compatibility_mode = "2.0"
+          ansible.playbook = "ansible/ctrl.yml"
+          ansible.inventory_path = "ansible/inventory.cfg"
+          ansible.limit = "controllers"
+          ansible.extra_vars = {
+            num_workers: num_workers
+          }
+        end
+
+        node.vm.provision "ansible" do |ansible|
+          ansible.compatibility_mode = "2.0"
+          ansible.playbook = "ansible/node.yml"
+          ansible.inventory_path = "ansible/inventory.cfg"
+          ansible.limit = "workers"
+          ansible.extra_vars = {
+            num_workers: num_workers
+          }
+        end
       end
     end
   end
