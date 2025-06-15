@@ -74,7 +74,9 @@ We extended our deployment to support Istio-based routing. We defined:
 ## Routing Modes
 We support the Canady deployment routing. This means incoming requests are split using the 90/10 Split. 90% of requests are routed to ```app-service``` version ```v1``` and 10% to ```v2```. This allows us to safely test experimental changes in the latter while maintaining uptime for most of the traffic on the former. 
 
-![Canary Release Flow Diagram](images/canary.png)
+<p align="center">
+  <img src="images/canary.png" alt="Canary Release Flow Diagram" width="600"/>
+</p>
 
 
 ## Sticky Sessions
