@@ -22,15 +22,6 @@ Vagrant.configure("2") do |config|
     f.write("ansible_ssh_common_args='-o StrictHostKeyChecking=no'\n")
   end
 
-  # Shared provisioning config (fix: pass extra_vars here too)
-  # config.vm.provision "ansible" do |ansible|
-  #   ansible.compatibility_mode = "2.0"
-  #   ansible.playbook = "ansible/general.yml"
-  #   ansible.inventory_path = "ansible/inventory.cfg"
-  #   ansible.extra_vars = {
-  #     num_workers: num_workers
-  #   }
-  # end
 
   # Controller
   config.vm.define "ctrl" do |ctrl|
@@ -40,13 +31,6 @@ Vagrant.configure("2") do |config|
       vb.cpus = ctrl_cpus
       vb.memory = ctrl_memory
     end
-    # ctrl.vm.provision "ansible" do |ansible|
-    #   ansible.compatibility_mode = "2.0"
-    #   ansible.playbook = "ansible/ctrl.yml"
-    #   ansible.extra_vars = {
-    #     num_workers: num_workers
-    #   }
-    # end
   end
 
   # Workers
