@@ -84,8 +84,9 @@
     - name: Modify flannel config to use eth1 interface
       ansible.builtin.replace:
         path: /home/vagrant/kube-flannel.yml
-        regexp: '(\s+)- args:\n(\s+)- --ip-masq\n(\s+)- --kube-subnet-mgr'
+        regexp: '(\s+)- args:\n(\s+)- --ip-masq\n(\s+)- --kube-subnet-mgr(?!\n\s+- --iface=eth1)'
         replace: '\1- args:\n\2- --ip-masq\n\3- --kube-subnet-mgr\n\3- --iface=eth1'
+        backup: yes
       register: flannel_modified
 
     # Use failed_when instead of ignore_errors to avoid task being marked as failed, when there is non-zero exit
