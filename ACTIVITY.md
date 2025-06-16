@@ -105,10 +105,14 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/13 (related to A
 Created PR: https://github.com/remla2025-team19/operation/pull/15 (related to A5)
 Approved PR: https://github.com/remla2025-team19/operation/pull/16
 
--- Siddharth --
+-- Siddharth: --
 Created PR: https://github.com/remla2025-team19/lib-version/pull/2 (related to A1)
 Created PR: https://github.com/remla2025-team19/model-service/pull/3 (related to A1)
 Created PR: https://github.com/remla2025-team19/app-service/pull/3 (related to A1)
+
+-- Manya: --
+Created PR: https://github.com/remla2025-team19/operation/pull/16 (related to A3)
+Approved PR: https://github.com/remla2025-team19/operation/pull/15
 
 # Week 8:
 
@@ -120,3 +124,8 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/51 (related to A
 -- Siddharth: --
 Created PR: https://github.com/remla2025-team19/operation/pull/51 (related to A2)
 Approved PR: https://github.com/remla2025-team19/operation/pull/44 (related to A5)
+
+-- Manya: --
+Created PR: https://github.com/remla2025-team19/operation/pull/52 (related to A5) 
+Approved PR: https://github.com/remla2025-team19/model-service/pull/3
+Approved PR: https://github.com/remla2025-team19/app-service/pull/3
