@@ -19,6 +19,7 @@ Vagrant.configure("2") do |config|
     f.write("\n[all:vars]\n")
     f.write("ansible_user=vagrant\n")
     f.write("ansible_ssh_private_key_file=~/.vagrant.d/insecure_private_key\n")
+    f.write("ansible_ssh_common_args='-o StrictHostKeyChecking=no'\n")
   end
 
   # Shared provisioning config (fix: pass extra_vars here too)
