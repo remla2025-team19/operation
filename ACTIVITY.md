@@ -124,6 +124,7 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/51 (related to A
 -- Siddharth: --
 Created PR: https://github.com/remla2025-team19/operation/pull/51 (related to A2)
 Approved PR: https://github.com/remla2025-team19/operation/pull/44 (related to A5)
+Approved PR: https://github.com/remla2025-team19/operation/pull/45 (related to A5)
 
 -- Manya: --
 Created PR: https://github.com/remla2025-team19/operation/pull/52 (related to A5) 
