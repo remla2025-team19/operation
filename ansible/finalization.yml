@@ -276,6 +276,34 @@
         mode: "0755"
       become: false
 
+    - name: Add Prometheus Community Helm repository
+      kubernetes.core.helm_repository:
+        name: prometheus-community
+        repo_url: https://prometheus-community.github.io/helm-charts
+      become: false
+
+    - name: Install Proemtheus Operator
+      kubernetes.core.helm:
+        name: prometheus-operator
+        chart_ref: prometheus-community/kube-prometheus-stack
+        release_namespace: prometheus-operator
+        create_namespace: true
+        wait: true
+        wait_timeout: 60s
+      become: false
+
+    - name: Wait for ServiceMonitor CRD to be available
+      kubernetes.core.k8s_info:
+        api_version: apiextensions.k8s.io/v1
+        kind: CustomResourceDefinition
+        name: servicemonitors.monitoring.coreos.com
+        wait: true
+        wait_condition:
+          type: Established
+          status: "True"
+        wait_timeout: 300
+      become: false
+
     - name: Install Sentiment Analyzer Helm chart
       kubernetes.core.helm:
         name: sentiment-analyzer
