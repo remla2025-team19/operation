@@ -1,19 +1,11 @@
-
-
 - name: "Step 9.1: Download Kubernetes signing key (ASCII)"
   ansible.builtin.apt_key:
     url: https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key
     state: present
-
-
 
 - name: "Step 9.2: Add Kubernetes APT repository"
   ansible.builtin.apt_repository:
     repo: deb https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /
     filename: kubernetes
     state: present
-
-- name: "Step 9.3: Refresh APT cache"
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
+    update_cache: yes # Update cache immediately after adding repo
