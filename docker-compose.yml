@@ -21,7 +21,7 @@ services:
             - MODEL_SERVICE_PORT=8080
             - MODEL_SECRET=${MODEL_SECRET}
         volumes:
-            - ./model_cache_local:/app/models_cache
+            - model_cache:/app/models_cache
         restart: unless-stopped
         healthcheck:
             test:
@@ -40,3 +40,5 @@ secrets:
         file: ./app_secret.txt
     model_secret:
         file: ./model_secret.txt
+volumes:
+    model_cache:
