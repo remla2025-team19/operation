@@ -1,20 +1,11 @@
-- name: "Step 7.1: Enable net.ipv4.ip_forward"
+- name: "Step 7.1: Configure sysctl parameters"
   ansible.posix.sysctl:
-    name: net.ipv4.ip_forward
-    value: '1'
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
     state: present
     reload: yes
-
-- name: "Step 7.2: Enable net.bridge.bridge-nf-call-iptables"
-  ansible.posix.sysctl:
-    name: net.bridge.bridge-nf-call-iptables
-    value: '1'
-    state: present
-    reload: yes
-
-- name: "Step 7.3: Enable net.bridge.bridge-nf-call-ip6tables"
-  ansible.posix.sysctl:
-    name: net.bridge.bridge-nf-call-ip6tables
-    value: '1'
-    state: present
-    reload: yes
+    sysctl_set: yes
+  loop:
+    - { name: "net.ipv4.ip_forward", value: "1" }
+    - { name: "net.bridge.bridge-nf-call-iptables", value: "1" }
+    - { name: "net.bridge.bridge-nf-call-ip6tables", value: "1" }
