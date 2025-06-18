@@ -289,7 +289,7 @@
         release_namespace: prometheus-operator
         create_namespace: true
         wait: true
-        wait_timeout: 60s
+        wait_timeout: 180
       become: false
 
     - name: Wait for ServiceMonitor CRD to be available
