@@ -8,6 +8,7 @@ services:
             - model
         environment:
             - MODEL_SERVICE_URL=http://model:8080
+        restart: unless-stopped
     model:
         #TODO: update to the latest version when everything in model-service is merged
         image: ghcr.io/remla2025-team19/model-service:0.0.7
@@ -18,3 +19,16 @@ services:
             - MODEL_SERVICE_PORT=8080
         volumes:
             - ./model_cache_local:/app/models_cache
+        restart: unless-stopped
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'sh',
+                    '-c',
+                    'curl -f http://localhost:$MODEL_SERVICE_PORT/health',
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
