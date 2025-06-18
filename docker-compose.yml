@@ -13,10 +13,9 @@ services:
         #TODO: update to the latest version when everything in model-service is merged
         image: ghcr.io/remla2025-team19/model-service:${MODEL_SERVICE_TAG}
         env_file:
-            - .env
+            - .env.model
         environment:
             - MODEL_CACHE_DIR=/app/models_cache
-            - MODEL_VERSION=v${MODEL_VERSION}
             - MODEL_SERVICE_HOST=0.0.0.0
             - MODEL_SERVICE_PORT=8080
         volumes:
