@@ -331,7 +331,7 @@
         api_version: apps/v1
         kind: Deployment
         label_selectors:
-          - app=app
+          - app=sentiment-analyzer-app
         wait: true
         wait_condition:
           type: Available
@@ -344,7 +344,7 @@
         api_version: apps/v1
         kind: Deployment
         label_selectors:
-          - app=model
+          - app=sentiment-analyzer-model
         wait: true
         wait_condition:
           type: Available
@@ -357,7 +357,7 @@
         api_version: v1
         kind: Pod
         label_selectors:
-          - app=app
+          - app=sentiment-analyzer-app
       register: app_pods
       become: false
 
