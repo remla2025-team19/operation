@@ -1,18 +1,44 @@
 name: remla2025-team19
 services:
     app:
-        image: ghcr.io/remla2025-team19/app-service:0.0.14
+        image: ghcr.io/remla2025-team19/app-service:${APP_SERVICE_TAG}
         ports:
             - '8080:8080'
         depends_on:
             - model
         environment:
             - MODEL_SERVICE_URL=http://model:8080
+            - APP_SECRET=${APP_SECRET}
+        restart: unless-stopped
     model:
-        image: ghcr.io/remla2025-team19/model-service:0.0.5
-        ports:
-            - '3000:8080'
+        #TODO: update to the latest version when everything in model-service is merged
+        image: ghcr.io/remla2025-team19/model-service:${MODEL_SERVICE_TAG}
+        env_file:
+            - .env.model
         environment:
-            - MODEL_CACHE_DIR=/models_cache
+            - MODEL_CACHE_DIR=/app/models_cache
+            - MODEL_SERVICE_HOST=0.0.0.0
+            - MODEL_SERVICE_PORT=8080
+            - MODEL_SECRET=${MODEL_SECRET}
         volumes:
-            - ./model_cache_local:/models_cache
+            - model_cache:/app/models_cache
+        restart: unless-stopped
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'sh',
+                    '-c',
+                    'curl -f http://localhost:$MODEL_SERVICE_PORT/health',
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+secrets:
+    app_secret:
+        file: ./app_secret.txt
+    model_secret:
+        file: ./model_secret.txt
+volumes:
+    model_cache:
