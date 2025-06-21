@@ -137,3 +137,12 @@ Approved PR: https://github.com/remla2025-team19/app-service/pull/3
 Created PR: https://github.com/remla2025-team19/model-service/pull/5 (related to A1)
 Created PR: https://github.com/remla2025-team19/lib-version/pull/3 (related to A1)
 Created PR: https://github.com/remla2025-team19/operation/pull/55 (related to A1)
+
+-- Siddharth: --
+Created PR: https://github.com/remla2025-team19/app-service/pull/4 (Related to A3)
+
+Approved PR: https://github.com/remla2025-team19/lib-version/pull/3 (related to A1)
+
+Approved PR: https://github.com/remla2025-team19/operation/pull/55 (related to A1)
+
+Approved PR: https://github.com/remla2025-team19/operation/pull/16 (related to A3, needs work)
