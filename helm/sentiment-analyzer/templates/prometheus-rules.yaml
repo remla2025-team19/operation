@@ -1,0 +1,11 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: sentiment-alerts
+spec:
+  groups:
+  - name: sentiment.rules
+    rules:
+    - alert: HighErrorRate
+      expr: rate(http_requests_total{status_code="500"}[5m]) > 0.1
+      for: 1m
