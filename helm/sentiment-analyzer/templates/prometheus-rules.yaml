@@ -1,7 +1,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: sentiment-alerts
+  name: {{ .Release.Name }}-sentiment-alerts
 spec:
   groups:
   - name: sentiment.rules
