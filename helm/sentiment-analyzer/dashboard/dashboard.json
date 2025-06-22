@@ -9,40 +9,69 @@
   "panels": [
     {
       "type": "gauge",
-      "title": "Total Requests",
+      "title": "Active Users",
       "id": 1,
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "app_requests_total",
-          "legendFormat": "requests",
+          "expr": "sentiment_app_active_users",
+          "legendFormat": "Active Users",
           "refId": "A"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "short"
+        }
+      }
     },
     {
       "type": "timeseries",
       "title": "Request Rate",
       "id": 2,
+      "gridPos": {"h": 6, "w": 12, "x": 6, "y": 0},
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(app_requests_total[$interval])",
+          "expr": "rate(sentiment_app_requests_total[1m])",
+          "legendFormat": "{{method}} {{endpoint}} {{status_code}}",
           "refId": "A"
         }
       ]
     },
     {
       "type": "timeseries",
-      "title": "Model Inference Latency",
+      "title": "Predictions by Sentiment",
       "id": 3,
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 6},
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "avg(model_latency_seconds)",
+          "expr": "sentiment_app_predictions_total",
+          "legendFormat": "{{sentiment_result}}",
           "refId": "A"
         }
       ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Request Duration (95th %ile)",
+      "id": 4,
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 6},
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum(rate(sentiment_app_request_duration_seconds_bucket[$interval])) by (1e, endpoint))",
+        "legendFormat": "{{endpoint}}",
+        "refId": "A"
+      }],
+      "fieldConfig":{
+        "defaults": {
+          "unit": "s"
+        }
+      }
     }
   ],
   "time": {
