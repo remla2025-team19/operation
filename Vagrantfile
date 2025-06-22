@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
   num_workers = 2
   ctrl_cpus = 1
   ctrl_memory = 4096
-  worker_cpus = 2
+  worker_cpus = 4
   worker_memory = 6144
   base_ip = "192.168.56."
 
