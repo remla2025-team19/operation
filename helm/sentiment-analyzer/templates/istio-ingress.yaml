@@ -64,18 +64,18 @@ metadata:
     namespace: {{ .Release.Namespace }}
 spec:
     hosts:
-        - {{ .Release.Name }}-model-service
+        - {{ .Release.Name }}-model
     http:
         - match:
               - sourceLabels:
                     version: v2
           route:
               - destination:
-                    host: {{ .Release.Name }}-model-service
+                    host: {{ .Release.Name }}-model
                     subset: v2
         - route:
               - destination:
-                    host: {{ .Release.Name }}-model-service
+                    host: {{ .Release.Name }}-model
                     subset: v1
 ---
 apiVersion: networking.istio.io/v1beta1
