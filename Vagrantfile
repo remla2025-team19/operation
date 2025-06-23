@@ -1,6 +1,8 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-24.04"
   config.ssh.insert_key = false
+  config.vm.synced_folder "./shared", "/mnt/shared", type: "virtualbox"
+
   num_workers = 2
   ctrl_cpus = 1
   ctrl_memory = 4096
