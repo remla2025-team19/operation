@@ -16,7 +16,7 @@
       "targets": [
         {
           "expr": "sentiment_app_active_users",
-          "legendFormat": "Active Users",
+          "legendFormat": "{{endpoint}}",
           "refId": "A"
         }
       ],
