@@ -151,9 +151,17 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/55 (related to A
 
 Approved PR: https://github.com/remla2025-team19/operation/pull/16 (related to A3, needs work)
 
+Approved PR: https://github.com/remla2025-team19/app-frontend/pull/3 (related to A1)
+
+
 -- Manya: --
 Created PR: https://github.com/remla2025-team19/app-service/pull/5
 Created PR: https://github.com/remla2025-team19/app-frontend/pull/3
 Created PR: https://github.com/remla2025-team19/operation/pull/61
 
 Approved PR: https://github.com/remla2025-team19/operation/pull/64
+
+# Week 10:
+
+-- Siddharth: --
+Approved PR: https://github.com/remla2025-team19/operation/pull/65 (related to A2)
