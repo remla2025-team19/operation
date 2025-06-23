@@ -326,6 +326,7 @@
           app:
             ingress:
               host: app.local
+          gcpServiceAccount: "{{ gcs_json }}"
       become: false
 
     - name: Deploy and configure rate limit service

@@ -101,7 +101,7 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
 
 ```bash
 vagrant up --provision
-ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml
+ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml -e "gsc_json=[enter-the-secret-json-base64-encoding]"
 ```
 
 ### Accessing the Sentiment Analyzer Application
