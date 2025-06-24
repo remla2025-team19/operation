@@ -62,7 +62,7 @@ spec:
               value: "/model_cache"
           volumeMounts:
             - name: model-cache-volume
-              mountPath: /models_cache
+              mountPath: /model_cache
           resources:
 {{- with $.Values.model.resources }}
             limits:
