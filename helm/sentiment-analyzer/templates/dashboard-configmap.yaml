@@ -6,7 +6,7 @@ metadata:
   labels:
     grafana_dashboard: "1"
 data:
-  app-dashboard.json: |
-    {{ .Files.Get "dashboard/dashboard.json" | indent 4 }}
+  app-dashboard.json: |-
+    {{ .Files.Get "../dashboard/dashboard.json" | indent 4 }}
 
 
