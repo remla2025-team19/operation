@@ -70,9 +70,10 @@ We extended our deployment to support Istio-based routing. We defined:
 * Ingress Gateway: In order to make our services externally accessible
 * Virtual Services: To define how traffic flows into the app
 * Destination Rules: Maps subsets to specific service versions with labels.
+* Envoy Filters: In order to enable rate limiting for requests to ```app-service```.
 
 ## Routing Modes
-We support the Canady deployment routing. This means incoming requests are split using the 90/10 Split. 90% of requests are routed to ```app-service``` version ```v1``` and 10% to ```v2```. This allows us to safely test experimental changes in the latter while maintaining uptime for most of the traffic on the former. 
+We support the Canary deployment routing. This means incoming requests are split using the 90/10 Split. 90% of requests are routed to ```app-service``` version ```v1``` and 10% to ```v2```. This allows us to safely test experimental changes in the latter while maintaining uptime for most of the traffic on the former. Additionally, requests with the header 'X-Experiment: canary" are always routed to v2. 
 
 <p align="center">
   <img src="images/canary.png" alt="Canary Release Flow Diagram" width="600"/>
@@ -80,6 +81,22 @@ We support the Canady deployment routing. This means incoming requests are split
 
 
 ## Sticky Sessions
-We enable sticky sessions based on a clients IP to ensure a consistent experience. We configure Istios ```consistentHash``` load balancer policy to help with the same. We are able to avoid version flipping because of the same.
+We enable sticky sessions based on the X-user header to ensure a consistent experience. We configure Istios ```consistentHash``` load balancer policy to help with the same. We are able to avoid version flipping because of the same.
 
+# Overall Request Lifecycle
+To summarise the process, the user initiates a request to the following domain: ```http://app.local```. This is manually mapped in /etc/hosts to the IP address of the Istio Ingress Gateway running on the controller node. This allows communication to and from the kubernetes cluster.
+
+The Istio Gateway is configured to listen at port 80 and is the entryway to the service mesh.
+
+The Envoy Filter enforces rate limiting on two keys: user id, and path. Per the configuration, if the incoming request exceeds the quota (either a single user makes 10 requests per minute or a single path is accessed 100 times a minute), reject the request.
+
+The Virtual Service handles routing of the request. 100% of requests with header ```X-Experiment: canary``` are routed to ```v2```. For requests without this mention in the header, the 90-10 canary routing is utilised.
+
+Versions ```v1``` and ```v2``` are defined by the Destination Rule which corresponds pods to labels. Sticky sessions enable versions being exposed to users consistently across requests. 
+
+Once the requests are sent to their respective versions of ```app-service``` and then ```model-service```, a prediction is returned back to the users browser via the service mesh.
+
+<p align="center">
+  <img src="images/overall.png" alt="Request Flow Diagram" width="600"/>
+</p>
 
