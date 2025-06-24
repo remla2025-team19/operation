@@ -118,6 +118,7 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/15
 
 -- Victor: --
 Created PR: https://github.com/remla2025-team19/operation/pull/44 (related to A5)
+Created PR: https://github.com/remla2025-team19/operation/pull/45 (related to A5 and A3)
 Approved PR: https://github.com/remla2025-team19/operation/pull/51 (related to A2)
 
 
@@ -137,3 +138,31 @@ Approved PR: https://github.com/remla2025-team19/app-service/pull/3
 Created PR: https://github.com/remla2025-team19/model-service/pull/5 (related to A1)
 Created PR: https://github.com/remla2025-team19/lib-version/pull/3 (related to A1)
 Created PR: https://github.com/remla2025-team19/operation/pull/55 (related to A1)
+Approved PR: https://github.com/remla2025-team19/app-service/pull/4 (related to A3)
+
+-- Siddharth: --
+Created PR: https://github.com/remla2025-team19/app-service/pull/4 (Related to A3)
+
+Created PR: https://github.com/remla2025-team19/operation/pull/53 (Related to A3)
+
+Approved PR: https://github.com/remla2025-team19/lib-version/pull/3 (related to A1)
+
+Approved PR: https://github.com/remla2025-team19/operation/pull/55 (related to A1)
+
+Approved PR: https://github.com/remla2025-team19/operation/pull/16 (related to A3, needs work)
+
+Approved PR: https://github.com/remla2025-team19/app-frontend/pull/3 (related to A1)
+
+
+-- Manya: --
+Created PR: https://github.com/remla2025-team19/app-service/pull/5
+Created PR: https://github.com/remla2025-team19/app-frontend/pull/3
+Created PR: https://github.com/remla2025-team19/operation/pull/61
+
+Approved PR: https://github.com/remla2025-team19/operation/pull/64
+
+# Week 10:
+
+-- Siddharth: --
+Approved PR: https://github.com/remla2025-team19/operation/pull/65 (related to A2)
+Approved PR: https://github.com/remla2025-team19/model-service/pull/5 (related to A1)

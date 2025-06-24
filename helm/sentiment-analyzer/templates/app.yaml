@@ -55,6 +55,14 @@ spec:
                 secretKeyRef: 
                   name: {{ $.Release.Name }}-app-credentials
                   key: DB_PASSWORD
+            - name: GCP_SECRET_PATH
+              value: /secrets/remla_secret.json
+
+          volumeMounts:
+            - name: gcp-secret
+              mountPath: /secrets
+              readOnly: true
+
           resources:
             {{- with $.Values.app.resources }}
             limits:
@@ -64,12 +72,18 @@ spec:
               memory: {{ .requests.memory | quote }}
               cpu: {{ .requests.cpu | quote }}
             {{- end }}
+
+      volumes:
+        - name: gcp-secret
+          secret:
+            secretName: {{ $.Release.Name }}-gcp-secret
+
 {{- end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-app-service
+  name: {{ .Release.Name }}-app
   labels:
     app: {{ .Release.Name }}-app
 spec:
@@ -98,3 +112,11 @@ type: Opaque
 data:
   API_KEY: {{ .Values.app.secrets.apiKey }}
   DB_PASSWORD: {{ .Values.app.secrets.dbPassword }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-gcp-secret
+type: Opaque
+data:
+  remla_secret.json: {{ .Values.app.secrets.gcpServiceAccount | quote }}

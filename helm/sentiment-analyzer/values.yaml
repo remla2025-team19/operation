@@ -30,7 +30,7 @@ app:
       v2: "latest" # TODO: set to canary release
   service:
     port: 80
-    targetPort: 8000
+    targetPort: 8080
   ingress:
     host: app.local
   config:
@@ -39,6 +39,7 @@ app:
   secrets:
     apiKey: "c2stdjEta2pkZmxrYWhmbHNkYWl1eWhjb3V3aWhxZW91cmg="
     dbPassword: "cGFzc3dvcmQ="
+    gcpServiceAccount: ""
   resources:
     limits:
       memory: "512Mi"

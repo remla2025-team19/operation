@@ -62,7 +62,7 @@ spec:
               value: "/model_cache"
           volumeMounts:
             - name: model-cache-volume
-              mountPath: /models_cache
+              mountPath: /model_cache
           resources:
 {{- with $.Values.model.resources }}
             limits:
@@ -82,7 +82,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-model-service
+  name: {{ .Release.Name }}-model
   labels:
     app: {{ .Release.Name }}-model
 spec:

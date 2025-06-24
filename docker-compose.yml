@@ -16,12 +16,12 @@ services:
         env_file:
             - .env.model
         environment:
-            - MODEL_CACHE_DIR=/app/models_cache
+            - MODEL_CACHE_DIR=/app/model_cache
             - MODEL_SERVICE_HOST=0.0.0.0
             - MODEL_SERVICE_PORT=8080
             - MODEL_SECRET=${MODEL_SECRET}
         volumes:
-            - model_cache:/app/models_cache
+            - model_cache:/app/model_cache
         restart: unless-stopped
         healthcheck:
             test:
