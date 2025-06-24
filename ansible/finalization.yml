@@ -222,16 +222,6 @@
         wait_timeout: 300
       become: false
 
-    - name: Add Prometheus Helm Repo
-      ansible.builtin.command:
-        cmd:  helm repo add prometheus-community https://prometheus-coomunity-github.io/helm-charts
-      become: false
-
-    - name: Update Helm repos
-      ansible.builtin.command:
-        cmd: helm repo update
-      become: false
-
     - name: Install Istio Prometheus addon
       kubernetes.core.k8s:
         src: /home/vagrant/istio-1.25.2/samples/addons/prometheus.yaml
@@ -299,7 +289,17 @@
             ingress:
               host: app.local
       become: false
+      
+    - name: Add Prometheus Helm Repo
+      ansible.builtin.command:
+        cmd:  helm repo add prometheus-community https://prometheus-community-github.io/helm-charts
+      become: false
 
+    - name: Update Helm repos
+      ansible.builtin.command:
+        cmd: helm repo update
+      become: false
+      
     - name: Install kube-prometheus-stack with values 
       kubernetes.core.helm:
         name: monitoring
