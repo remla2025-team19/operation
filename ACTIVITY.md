@@ -163,6 +163,9 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/64
 
 # Week 10:
 
+-- Victor: --
+Approved PR: https://github.com/remla2025-team19/operation/pull/61
+
 -- Siddharth: --
 Approved PR: https://github.com/remla2025-team19/operation/pull/65 (related to A2)
 Approved PR: https://github.com/remla2025-team19/model-service/pull/5 (related to A1)
