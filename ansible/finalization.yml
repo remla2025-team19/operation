@@ -102,6 +102,23 @@
               loadBalancerIP: 192.168.56.90
       become: false
 
+    - name: Install monitoring ingress-nginx with helm
+      kubernetes.core.helm:
+        name: monitoring-ingress-nginx
+        chart_ref: ingress-nginx
+        chart_repo_url: https://kubernetes.github.io/ingress-nginx
+        release_namespace: monitoring-ingress
+        create_namespace: true
+        values: 
+          controller:
+            ingressClassResource:
+              name: monitoring-nginx
+              controllerValue: "k8s.io/monitoring-ingress-nginx"
+            ingressClass: monitoring-nginx
+            service:
+              loadBalancerIP: 192.168.56.92
+      become: false
+      
     - name: Wait for ingress-nginx webhook
       kubernetes.core.k8s_info:
         api_version: apps/v1
@@ -314,30 +331,15 @@
         wait_timeout: 300
       become: false
 
-    - name: Install Sentiment Analyzer Helm chart
-      kubernetes.core.helm:
-        name: sentiment-analyzer
-        chart_ref: /home/vagrant/helm/sentiment-analyzer
-        release_namespace: default
-        values:
-          model:
-            service:
-              port: 5001
-          app:
-            ingress:
-              host: app.local
-          gcpServiceAccount: "{{ gcs_json }}"
-      become: false
-      
-    - name: Add Prometheus Helm Repo
-      ansible.builtin.command:
-        cmd:  helm repo add prometheus-community https://prometheus-community-github.io/helm-charts
-      become: false
+    # - name: Add Prometheus Helm Repo
+    #   ansible.builtin.command:
+    #     cmd:  helm repo add prometheus-community https://prometheus-community-github.io/helm-charts
+    #   become: false
 
-    - name: Update Helm repos
-      ansible.builtin.command:
-        cmd: helm repo update
-      become: false
+    # - name: Update Helm repos
+    #   ansible.builtin.command:
+    #     cmd: helm repo update
+    #   become: false
       
     - name: Install kube-prometheus-stack with values 
       kubernetes.core.helm:
@@ -350,10 +352,23 @@
           - "/home/vagrant/helm/sentiment-analyzer/grafana-values.yaml"
       become: false
 
-    - name: Apply Grafana dashboard ConfigMap
-      ansible.builtin.command:
-        cmd: kubectl apply -f /home/vagrant/helm/sentiment-analyzer/templates/dashboard-configmap.yaml
+
+    - name: Install Sentiment Analyzer Helm chart
+      kubernetes.core.helm:
+        name: sentiment-analyzer
+        chart_ref: /home/vagrant/helm/sentiment-analyzer
+        release_namespace: default
+        values:
+          model:
+            service:
+              port: 5001
+          app:
+            ingress:
+              host: app.local
+          # gcpServiceAccount: "{{ gcs_json }}"
       become: false
+      
+
           
     - name: Deploy and configure rate limit service
       kubernetes.core.k8s:
