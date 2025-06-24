@@ -39,6 +39,7 @@ app:
   secrets:
     apiKey: "c2stdjEta2pkZmxrYWhmbHNkYWl1eWhjb3V3aWhxZW91cmg="
     dbPassword: "cGFzc3dvcmQ="
+    gcpServiceAccount: ""
   resources:
     limits:
       memory: "512Mi"
