@@ -1,17 +1,11 @@
 # Final Deployment: System Structure
 
-## System Overview
-The system consists of the following repositories:
-* app-frontend : This is the web-based interface through which users are able to interact with the app.
-* app-service : This is the backend service that receives review data from the frontend and queries the model-service for results.
-* model-service : This is a wrapper service for the ML model and connects it to other components via REST API.
-* model-training: This contains the ML model training pipeline.
-* lib-ml : This encapsulates the data preprocessing steps for data used in training.
-* lib-version : This is a version-aware library that can be asked for the version.
-* operation : This manages cluster provisioning, monitoring, routing and dashboards.
-
-We also make use of the following infrastructure:
-* Istio: For managing within-service traffic, version splitting and observability. 
+## System Components
+The system consists of the following repositories that interact in the following way:
+* Frontend: This is what users interact with - submitting inputs and receiving responses.
+* Backend: Frontend sends user inputs to the backend which handles data transfer between the frontend and the model.
+* Model: Runs the ML model and makes predictions.
+* Routing: For managing inter and intra-service traffic, version splitting, rate limiting and stick sessions. 
 * Prometheus and Grafana: For scraping and visualising metrics from the running services, on a dashboard.
 * Kubernetes dashboard: For inspecting the state of the cluster.
 
@@ -97,6 +91,6 @@ Versions ```v1``` and ```v2``` are defined by the Destination Rule which corresp
 Once the requests are sent to their respective versions of ```app-service``` and then ```model-service```, a prediction is returned back to the users browser via the service mesh.
 
 <p align="center">
-  <img src="images/overall.png" alt="Request Flow Diagram" width="600"/>
+  <img src="images/updated_request_flow.png" alt="Request Flow Diagram" width="600"/>
 </p>
 
