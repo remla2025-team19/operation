@@ -1,7 +1,6 @@
 ---
 - hosts: workers
   become: true
-  strategy: free
   tasks:
     # Step 18
     - name: Check if node is already part of a cluster
