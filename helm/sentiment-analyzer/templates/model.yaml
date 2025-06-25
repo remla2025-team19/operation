@@ -53,10 +53,10 @@ spec:
                   name: {{ $.Release.Name }}-model-config
                   key: PREDICTION_THRESHOLD
             - name: MODEL_CACHE_DIR
-              value: "/app/model_cache"
+              value: {{ $.Values.storage.modelCache.mountPath | quote }}
           volumeMounts:
             - name: model-cache-volume
-              mountPath: /app/model_cache
+              mountPath: {{ $.Values.storage.modelCache.mountPath }}
           resources:
 {{- with $.Values.model.resources }}
             limits:

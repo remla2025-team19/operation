@@ -51,3 +51,4 @@ app:
 storage:
   modelCache:
     path: "/mnt/shared/model_cache"
+    mountPath: "/app/model_cache"
