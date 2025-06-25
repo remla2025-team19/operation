@@ -19,10 +19,6 @@ spec:
       labels:
         app: {{ $.Release.Name }}-model
         version: {{ $version }}
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: "/metrics"
-        prometheus.io/port: "9100" # TODO: is this correct?
     spec:
       containers:
         - name: model-service
@@ -30,8 +26,6 @@ spec:
           ports:
             - name: http
               containerPort: {{ $.Values.model.service.port }}
-            - name: metrics
-              containerPort: 9100
           env:
             - name: MODEL_VERSION
               valueFrom:
@@ -93,10 +87,6 @@ spec:
       protocol: TCP
       port: {{ .Values.model.service.port }}
       targetPort: http
-    - name: metrics
-      protocol: TCP
-      port: 9100
-      targetPort: metrics
   type: ClusterIP
 ---
 apiVersion: v1
