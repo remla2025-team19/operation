@@ -36,13 +36,13 @@ This will start the web application, after which you can send your queries to ht
 
 ## Instructions for assignment 2
 
-1. Provision the cluster
+### 1. Provision the cluster
 
 ```bash
 vagrant up
 ```
 
-2. Finalize the cluster
+### 2. Finalize the cluster
 
 ```bash
 ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml
@@ -50,24 +50,17 @@ ansible-playbook -u vagrant -i 192.168.56.100, ansible/finalization.yml
 
 ## Instructions for assignment 3
 
-1. To apply the k8s resources. Set the image version tags in [kubernetes/kustomization.yaml](./kubernetes/kustomization.yaml) then use the following command:
-
-```bash
-kubectl apply -k kubernetes/
-```
-
-In case of issues, restart minikube.
+In case of issues in previous step, restart minikube.
 
 ```bash
 minikube stop
 minikube start
 ```
 
-2. To set install Helm
-   Run the command
-
-```bash
-helm install sentiment-analyzer-1 ./helm/sentiment-analyzer/ --set app.ingress.host=app1.local
+On running the `finalization.yaml` on the `ctrl` node [Step-2](#2-finalize-the-cluster) , the `sentiment-analyzer` release will be deployed on the worker nodes. The `finalization.yaml`, will also setup one ingress controller. To access grafana and kubernetes dashboard please make the following changes to `/etc/hosts`
+```
+192.168.56.90 dashboard.local grafana.local
+192.168.56.91 app.local
 ```
 
 To install another instance for the same cluster, be sure the names are changes. For example,
@@ -96,6 +89,19 @@ Create namespace + CRDs + Prometheus/Alertmanager/Grafana:
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace
 ```
+3. Grafana 
+
+Grafana dashboard can be viewed via:
+```http://grafana.local```
+
+Log in with the following default credentials:
+```username: admin```
+```password: prom-operator```
+
+Click on the ```+``` on the top of the screen to ```import``` the ```helm/sentiment-analyzer/dashboard/dashboard.json``` file.
+
+
+
 
 ## Assignment 5
 
