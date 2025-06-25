@@ -88,7 +88,11 @@
         "label": "Timeframe",
         "auto": true,
         "query": "1m,5m,15m,1h,6h,12h,1d",
-        "refresh": 2
+        "refresh": 2,
+        "current": {
+            "text": "5m",
+            "value": "5m"
+        }
       }
     ]
   }
