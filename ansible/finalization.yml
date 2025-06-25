@@ -317,21 +317,20 @@
         wait_timeout: 300
       become: false
 
-    - name: Install kube-prometheus-stack with values 
+    - name: Install kube-prometheus-stack with values
       kubernetes.core.helm:
         name: monitoring
         chart_ref: kube-prometheus-stack
         chart_repo_url: https://prometheus-community.github.io/helm-charts
         release_namespace: monitoring
         create_namespace: true
-        values_files: 
+        values_files:
           - "/home/vagrant/helm/sentiment-analyzer/grafana-values.yaml"
       become: false
 
-
-    - name: Install Sentiment Analyzer Helm chart
+    - name: Install Gateway-based Sentiment Analyzer Helm chart
       kubernetes.core.helm:
-        name: sentiment-analyzer
+        name: istio-sentiment-analyzer
         chart_ref: /home/vagrant/helm/sentiment-analyzer
         release_namespace: default
         values:
@@ -341,11 +340,8 @@
           app:
             ingress:
               host: app.local
-          # gcpServiceAccount: "{{ gcs_json }}"
       become: false
-      
 
-          
     - name: Deploy and configure rate limit service
       kubernetes.core.k8s:
         src: /home/vagrant/k8s/istio-rate-limit.yml
@@ -359,7 +355,7 @@
         api_version: apps/v1
         kind: Deployment
         label_selectors:
-          - app=sentiment-analyzer-app
+          - app=istio-sentiment-analyzer-app
         wait: true
         wait_condition:
           type: Available
@@ -372,7 +368,7 @@
         api_version: apps/v1
         kind: Deployment
         label_selectors:
-          - app=sentiment-analyzer-model
+          - app=istio-sentiment-analyzer-model
         wait: true
         wait_condition:
           type: Available
@@ -385,7 +381,7 @@
         api_version: v1
         kind: Pod
         label_selectors:
-          - app=sentiment-analyzer-app
+          - app=istio-sentiment-analyzer-app
       register: app_pods
       become: false
 
