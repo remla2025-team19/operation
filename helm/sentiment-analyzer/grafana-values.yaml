@@ -7,7 +7,7 @@ grafana:
       searchNamespace: ALL
   ingress:
     enabled: true
-    ingressClassName: monitoring-nginx
+    ingressClassName: nginx
     annotations:
       nginx.ingress.kubernetes.io/rewrite-target: /
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
