@@ -1,6 +1,5 @@
 ---
 - hosts: all
-  become_user: vagrant
   vars:
     metallb_version: "v0.14.9"
   environment:
@@ -181,11 +180,15 @@
         owner: vagrant
         group: vagrant
 
-    - name: Add istioctl to PATH in .bashrc
-      ansible.builtin.lineinfile:
-        path: /home/vagrant/.bashrc
-        line: 'export PATH="$PATH:/home/vagrant/istio-1.25.2/bin"'
-        state: present
+    - name: Install istioctl to /usr/local/bin
+      ansible.builtin.copy:
+        src: /home/vagrant/istio-1.25.2/bin/istioctl
+        dest: /usr/local/bin/istioctl
+        mode: "0755"
+        owner: root
+        group: root
+        remote_src: yes
+      become: yes
 
     - name: Create IstioOperator configuration for MetalLB
       ansible.builtin.copy:
@@ -216,7 +219,7 @@
     # NOTE: The shell still does not detect istioctl in path
     - name: Install Istio with custom configuration
       ansible.builtin.shell:
-        cmd: /home/vagrant/istio-1.25.2/bin/istioctl install -y -f /home/vagrant/istio-config.yaml
+        cmd: istioctl install -y -f /home/vagrant/istio-config.yaml
       become: false
       when: not istio_check.resources
 

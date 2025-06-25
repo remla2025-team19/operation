@@ -48,7 +48,7 @@
 
     - name: Ensure kube directory exists on host
       ansible.builtin.file:
-        path: "{{ playbook_dir }}/../kube"
+        path: "{{ playbook_dir }}/kubeconfig"
         state: directory
         mode: "0755"
       delegate_to: localhost

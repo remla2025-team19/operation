@@ -2,3 +2,4 @@
 ansible/kubeconfig/
 kubeconfig/
 ansible/inventory.cfg
+shared/*
