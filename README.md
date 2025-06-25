@@ -91,20 +91,14 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
 ```
 3. Grafana 
 
-Install ```kube-prometheus-stack``` using Helm by running:
-``` ansible-playbook -u vagrant -i 192.168.56.100, ansible/monitoring.yml ```
-
-To access the Grafana UI, port forward by running:
-``` kubectl --kubeconfig ansible/kubeconfig/config port-forward svc/monitoring-grafana 3000:80 -n monitoring ```
-
-Then visit:
-```http://localhost:3000```
+Grafana dashboard can be viewed via:
+```http://grafana.local```
 
 Log in with the following default credentials:
 ```username: admin```
 ```password: prom-operator```
 
-Click on the ```+``` on the top of the screen to ```import``` the ```dashboard-config.json``` file.
+Click on the ```+``` on the top of the screen to ```import``` the ```helm/sentiment-analyzer/dashboard/dashboard.json``` file.
 
 
 
