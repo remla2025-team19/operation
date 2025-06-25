@@ -1,3 +1,5 @@
+# Istio routing setup for continuous experimentation with multiple versions of the sentiment analyzer app.
+{{- if .Values.istio.enabled }}
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
@@ -25,24 +27,30 @@ spec:
     hosts:
         - {{ .Values.app.ingress.host | quote }}
     http:
+        {{- range .Values.istio.additionalReleases }}
+        {{- if .experimentHeader }}
         - match:
-              - headers:
-                    X-Experiment:
-                        exact: 'canary'
+            - headers:
+                X-Experiment:
+                  exact: {{ .experimentHeader | quote }}
           route:
-              - destination:
-                    host: {{ .Release.Name }}-app
-                    subset: v2
-                weight: 100
+            - destination:
+                host: {{ $.Release.Name }}-app
+                subset: {{ .versionLabel }}
+              weight: 100
+        {{- end }}
+        {{- end }}
         - route:
-              - destination:
-                    host: {{ .Release.Name }}-app
-                    subset: v1
-                weight: 90
-              - destination:
-                    host: {{ .Release.Name }}-app
-                    subset: v2
-                weight: 10
+            - destination:
+                host: {{ $.Release.Name }}-app
+                subset: {{ $.Values.versionLabel }}
+              weight: {{ $.Values.istio.baseWeight }}
+            {{- range .Values.istio.additionalReleases }}
+            - destination:
+                host: {{ $.Release.Name }}-app
+                subset: {{ .versionLabel }}
+              weight: {{ .weight }}
+            {{- end }}
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
@@ -52,10 +60,12 @@ metadata:
 spec:
     host: {{ .Release.Name }}-model
     subsets:
-        - name: v1
-          labels: { version: v1 }
-        - name: v2
-          labels: { version: v2 }
+        - name: {{ .Values.versionLabel }}
+          labels: { version: {{ .Values.versionLabel }} }
+        {{- range .Values.istio.additionalReleases }}
+        - name: {{ .versionLabel }}
+          labels: { version: {{ .versionLabel }} }
+        {{- end }}
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -66,17 +76,19 @@ spec:
     hosts:
         - {{ .Release.Name }}-model
     http:
+        {{- range .Values.istio.additionalReleases }}
         - match:
-              - sourceLabels:
-                    version: v2
+            - sourceLabels:
+                version: {{ .versionLabel }}
           route:
-              - destination:
-                    host: {{ .Release.Name }}-model
-                    subset: v2
+            - destination:
+                host: {{ $.Release.Name }}-model
+                subset: {{ .versionLabel }}
+        {{- end }}
         - route:
-              - destination:
-                    host: {{ .Release.Name }}-model
-                    subset: v1
+            - destination:
+                host: {{ .Release.Name }}-model
+                subset: {{ .Values.versionLabel }}
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
@@ -88,9 +100,12 @@ spec:
     trafficPolicy:
         loadBalancer:
             consistentHash:
-                httpHeaderName: 'X-User' # Sticky sessions based on user header
+                httpHeaderName: 'X-User'
     subsets:
-        - name: v1
-          labels: { version: v1 }
-        - name: v2
-          labels: { version: v2 }
+        - name: {{ .Values.versionLabel }}
+          labels: { version: {{ .Values.versionLabel }} }
+        {{- range .Values.istio.additionalReleases }}
+        - name: {{ .versionLabel }}
+          labels: { version: {{ .versionLabel }} }
+        {{- end }}
+{{- end }}
