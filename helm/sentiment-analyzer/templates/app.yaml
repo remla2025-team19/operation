@@ -89,7 +89,7 @@ metadata:
     app: {{ $.Release.Name }}-app
     version: {{ .versionLabel }}
 spec:
-  replicas: {{ .app.replicaCount | default $.Values.app.replicaCount }}
+  replicas: {{ dig "app" "replicaCount" $.Values.app.replicaCount . }}
   selector:
     matchLabels:
       app: {{ $.Release.Name }}-app
@@ -106,7 +106,7 @@ spec:
     spec:
       containers:
         - name: app-service
-          image: {{ $.Values.app.image.repository }}:{{ .app.image.tag | default $.Values.app.image.tag }}
+          image: {{ $.Values.app.image.repository }}:{{ dig "app" "image" "tag" $.Values.app.image.tag . }}
           ports:
             - containerPort: {{ $.Values.app.service.targetPort }}
           env:
@@ -144,7 +144,7 @@ spec:
               readOnly: true
 
           resources:
-            {{- with .app.resources | default $.Values.app.resources }}
+            {{- with dig "app" "resources" $.Values.app.resources . }}
             limits:
               memory: {{ .limits.memory | quote }}
               cpu: {{ .limits.cpu | quote }}

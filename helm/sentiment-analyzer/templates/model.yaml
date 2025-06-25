@@ -83,7 +83,7 @@ metadata:
     app: {{ $.Release.Name }}-model
     version: {{ .versionLabel }}
 spec:
-  replicas: {{ .model.replicaCount | default $.Values.model.replicaCount }}
+  replicas: {{ dig "model" "replicaCount" $.Values.model.replicaCount . }}
   selector:
     matchLabels:
       app: {{ $.Release.Name }}-model
@@ -96,28 +96,28 @@ spec:
     spec:
       containers:
         - name: model-service
-          image: {{ $.Values.model.image.repository }}:{{ .model.image.tag | default $.Values.model.image.tag }}
+          image: {{ $.Values.model.image.repository }}:{{ dig "model" "image" "tag" $.Values.model.image.tag . }}
           ports:
             - name: http
               containerPort: {{ $.Values.model.service.port }}
           env:
             - name: MODEL_VERSION
-              value: {{ .model.config.version | default $.Values.model.config.version | quote }}
+              value: {{ dig "model" "config" "version" $.Values.model.config.version . | quote }}
             - name: MODEL_SERVICE_PORT
               value: {{ $.Values.model.service.port | quote }}
             - name: MODEL_SERVICE_HOST
               value: {{ $.Values.model.service.host | quote }}
             - name: MODEL_ARTIFACT_URL
-              value: {{ printf "https://github.com/remla2025-team19/model-training/releases/download/%s/sentiment_model_%s.pkl" (.model.config.version | default $.Values.model.config.version) (.model.config.version | default $.Values.model.config.version) | quote }}
+              value: {{ $version := dig "model" "config" "version" $.Values.model.config.version . }}{{ printf "https://github.com/remla2025-team19/model-training/releases/download/%s/sentiment_model_%s.pkl" $version $version | quote }}
             - name: PREDICTION_THRESHOLD
-              value: {{ .model.config.predictionThreshold | default $.Values.model.config.predictionThreshold | quote }}
+              value: {{ dig "model" "config" "predictionThreshold" $.Values.model.config.predictionThreshold . | quote }}
             - name: MODEL_CACHE_DIR
               value: {{ $.Values.storage.modelCache.mountPath | quote }}
           volumeMounts:
             - name: model-cache-volume
               mountPath: {{ $.Values.storage.modelCache.mountPath }}
           resources:
-{{- with .model.resources | default $.Values.model.resources }}
+{{- with dig "model" "resources" $.Values.model.resources . }}
             limits:
               memory: {{ .limits.memory | quote }}
               cpu: {{ .limits.cpu | quote }}
