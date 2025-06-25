@@ -102,23 +102,6 @@
               loadBalancerIP: 192.168.56.90
       become: false
 
-    - name: Install monitoring ingress-nginx with helm
-      kubernetes.core.helm:
-        name: monitoring-ingress-nginx
-        chart_ref: ingress-nginx
-        chart_repo_url: https://kubernetes.github.io/ingress-nginx
-        release_namespace: monitoring-ingress
-        create_namespace: true
-        values: 
-          controller:
-            ingressClassResource:
-              name: monitoring-nginx
-              controllerValue: "k8s.io/monitoring-ingress-nginx"
-            ingressClass: monitoring-nginx
-            service:
-              loadBalancerIP: 192.168.56.92
-      become: false
-      
     - name: Wait for ingress-nginx webhook
       kubernetes.core.k8s_info:
         api_version: apps/v1
@@ -309,7 +292,7 @@
         repo_url: https://prometheus-community.github.io/helm-charts
       become: false
 
-    - name: Install Proemtheus Operator
+    - name: Install Prometheus Operator
       kubernetes.core.helm:
         name: prometheus-operator
         chart_ref: prometheus-community/kube-prometheus-stack
@@ -331,16 +314,6 @@
         wait_timeout: 300
       become: false
 
-    # - name: Add Prometheus Helm Repo
-    #   ansible.builtin.command:
-    #     cmd:  helm repo add prometheus-community https://prometheus-community-github.io/helm-charts
-    #   become: false
-
-    # - name: Update Helm repos
-    #   ansible.builtin.command:
-    #     cmd: helm repo update
-    #   become: false
-      
     - name: Install kube-prometheus-stack with values 
       kubernetes.core.helm:
         name: monitoring
