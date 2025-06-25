@@ -328,7 +328,19 @@
           - "/home/vagrant/helm/sentiment-analyzer/grafana-values.yaml"
       become: false
 
-    - name: Install Gateway-based Sentiment Analyzer Helm chart
+    - name: Install Ingress-based Sentiment Analyzer Helm Chart
+      kubernetes.core.helm:
+        name: ingress-sentiment-analyzer
+        chart_ref: /home/vagrant/helm/sentiment-analyzer
+        release_namespace: default
+        values:
+          istio:
+            enabled: false
+          app:
+            ingress:
+              host: restaurant.local
+
+    - name: Install Gateway-based Sentiment Analyzer Helm Chart
       kubernetes.core.helm:
         name: istio-sentiment-analyzer
         chart_ref: /home/vagrant/helm/sentiment-analyzer
