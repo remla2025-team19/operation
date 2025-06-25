@@ -1,19 +1,17 @@
 # Default values for sentiment-analyzer
+versionLabel: v1
 
 model:
   replicaCount: 1
   image:
     repository: ghcr.io/remla2025-team19/model-service
-    tag:
-      v1: "v0.0.9"
-      v2: "latest" # TODO: set to canary release
+    tag: "v0.0.9"
   service:
     port: 5001
     host: "0.0.0.0"
   config:
     version: "v1.0.11"
-    artifactUrl: "https://github.com/remla2025-team19/model-training/releases/download/v1.0.11/sentiment_model_v1.0.11.pkl"
-    predictionThreshold: "0.75"
+    predictionThreshold: 0.75
   resources:
     limits:
       memory: "512Mi"
@@ -21,18 +19,18 @@ model:
     requests:
       memory: "256Mi"
       cpu: "250m"
+
 app:
   replicaCount: 1
   image:
     repository: ghcr.io/remla2025-team19/app-service
-    tag:
-      v1: "v0.0.22"
-      v2: "latest" # TODO: set to canary release
+    tag: "v0.0.22"
   service:
     port: 80
     targetPort: 8080
   ingress:
     host: app.local
+    className: "nginx"
   config:
     logLevel: "info"
     dbUser: "admin"
@@ -48,6 +46,21 @@ app:
       memory: "256Mi"
       cpu: "250m"
 
+istio:
+  enabled: true
+  additionalReleases:
+    # example canary release, changes the app service version and the model prediction threshold
+    - versionLabel: v2
+      experimentHeader: canary
+      weight: 10
+      app:
+        image:
+          tag: "latest"
+      model:
+        predictionThreshold: 0.65
+  baseWeight: 90 # weight of the stable release defined above (100-sum(additional_releases))
+
 storage:
   modelCache:
     path: "/mnt/shared/model_cache"
+    mountPath: "/app/model_cache"

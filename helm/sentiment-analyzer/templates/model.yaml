@@ -1,70 +1,123 @@
-{{- range $version := keys $.Values.model.image.tag }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $.Release.Name }}-model-deployment-{{ $version }}
-  namespace: {{ $.Release.Namespace }}
+  name: {{ .Release.Name }}-model-deployment-{{ .Values.versionLabel }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ $.Release.Name }}-model
-    version: {{ $version }}
+    app: {{ .Release.Name }}-model
+    version: {{ .Values.versionLabel }}
 spec:
-  replicas: {{ $.Values.model.replicaCount }}
+  replicas: {{ .Values.model.replicaCount }}
   selector:
     matchLabels:
-      app: {{ $.Release.Name }}-model
-      version: {{ $version }}
+      app: {{ .Release.Name }}-model
+      version: {{ .Values.versionLabel }}
   template:
     metadata:
       labels:
-        app: {{ $.Release.Name }}-model
-        version: {{ $version }}
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: "/metrics"
-        prometheus.io/port: "9100" # TODO: is this correct?
+        app: {{ .Release.Name }}-model
+        version: {{ .Values.versionLabel }}
     spec:
       containers:
         - name: model-service
-          image: {{ $.Values.model.image.repository }}:{{ index $.Values.model.image.tag $version }}
+          image: {{ .Values.model.image.repository }}:{{ .Values.model.image.tag }}
           ports:
             - name: http
-              containerPort: {{ $.Values.model.service.port }}
-            - name: metrics
-              containerPort: 9100
+              containerPort: {{ .Values.model.service.port }}
           env:
             - name: MODEL_VERSION
               valueFrom:
                 configMapKeyRef:
-                  name: {{ $.Release.Name }}-model-config
+                  name: {{ .Release.Name }}-model-config
                   key: MODEL_VERSION
             - name: MODEL_SERVICE_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: {{ $.Release.Name }}-model-config
+                  name: {{ .Release.Name }}-model-config
                   key: MODEL_SERVICE_PORT
             - name: MODEL_SERVICE_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: {{ $.Release.Name }}-model-config
+                  name: {{ .Release.Name }}-model-config
                   key: MODEL_SERVICE_HOST
             - name: MODEL_ARTIFACT_URL
               valueFrom:
                 configMapKeyRef:
-                  name: {{ $.Release.Name }}-model-config
+                  name: {{ .Release.Name }}-model-config
                   key: MODEL_ARTIFACT_URL
             - name: PREDICTION_THRESHOLD
               valueFrom:
                 configMapKeyRef:
-                  name: {{ $.Release.Name }}-model-config
+                  name: {{ .Release.Name }}-model-config
                   key: PREDICTION_THRESHOLD
             - name: MODEL_CACHE_DIR
-              value: "/model_cache"
+              value: {{ .Values.storage.modelCache.mountPath | quote }}
           volumeMounts:
             - name: model-cache-volume
-              mountPath: /model_cache
+              mountPath: {{ .Values.storage.modelCache.mountPath }}
           resources:
-{{- with $.Values.model.resources }}
+{{- with .Values.model.resources }}
+            limits:
+              memory: {{ .limits.memory | quote }}
+              cpu: {{ .limits.cpu | quote }}
+            requests:
+              memory: {{ .requests.memory | quote }}
+              cpu: {{ .requests.cpu | quote }}
+{{- end }}
+      volumes:
+        - name: model-cache-volume
+          hostPath:
+            path: {{ .Values.storage.modelCache.path }}
+            type: DirectoryOrCreate
+
+{{- if .Values.istio.enabled }}
+{{- range .Values.istio.additionalReleases }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-model-deployment-{{ .versionLabel }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ $.Release.Name }}-model
+    version: {{ .versionLabel }}
+spec:
+  replicas: {{ dig "model" "replicaCount" $.Values.model.replicaCount . }}
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-model
+      version: {{ .versionLabel }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-model
+        version: {{ .versionLabel }}
+    spec:
+      containers:
+        - name: model-service
+          image: {{ $.Values.model.image.repository }}:{{ dig "model" "image" "tag" $.Values.model.image.tag . }}
+          ports:
+            - name: http
+              containerPort: {{ $.Values.model.service.port }}
+          env:
+            - name: MODEL_VERSION
+              value: {{ dig "model" "config" "version" $.Values.model.config.version . | quote }}
+            - name: MODEL_SERVICE_PORT
+              value: {{ $.Values.model.service.port | quote }}
+            - name: MODEL_SERVICE_HOST
+              value: {{ $.Values.model.service.host | quote }}
+            - name: MODEL_ARTIFACT_URL
+              value: {{ $version := dig "model" "config" "version" $.Values.model.config.version . }}{{ printf "https://github.com/remla2025-team19/model-training/releases/download/%s/sentiment_model_%s.pkl" $version $version | quote }}
+            - name: PREDICTION_THRESHOLD
+              value: {{ dig "model" "config" "predictionThreshold" $.Values.model.config.predictionThreshold . | quote }}
+            - name: MODEL_CACHE_DIR
+              value: {{ $.Values.storage.modelCache.mountPath | quote }}
+          volumeMounts:
+            - name: model-cache-volume
+              mountPath: {{ $.Values.storage.modelCache.mountPath }}
+          resources:
+{{- with dig "model" "resources" $.Values.model.resources . }}
             limits:
               memory: {{ .limits.memory | quote }}
               cpu: {{ .limits.cpu | quote }}
@@ -77,6 +130,7 @@ spec:
           hostPath:
             path: {{ $.Values.storage.modelCache.path }}
             type: DirectoryOrCreate
+{{- end }}
 {{- end }}
 ---
 apiVersion: v1
@@ -93,10 +147,6 @@ spec:
       protocol: TCP
       port: {{ .Values.model.service.port }}
       targetPort: http
-    - name: metrics
-      protocol: TCP
-      port: 9100
-      targetPort: metrics
   type: ClusterIP
 ---
 apiVersion: v1
@@ -105,7 +155,7 @@ metadata:
   name: {{ .Release.Name }}-model-config
 data:
   MODEL_VERSION:          {{ .Values.model.config.version            | quote }}
-  MODEL_ARTIFACT_URL:     {{ .Values.model.config.artifactUrl        | quote }}
+  MODEL_ARTIFACT_URL:     {{ printf "https://github.com/remla2025-team19/model-training/releases/download/%s/sentiment_model_%s.pkl" .Values.model.config.version .Values.model.config.version | quote }}
   PREDICTION_THRESHOLD:   {{ .Values.model.config.predictionThreshold| quote }}
   MODEL_SERVICE_PORT:     {{ .Values.model.service.port              | quote }}
   MODEL_SERVICE_HOST:     {{ .Values.model.service.host              | quote }}
