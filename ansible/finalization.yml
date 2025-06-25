@@ -339,6 +339,7 @@
           app:
             ingress:
               host: restaurant.local
+      become: false
 
     - name: Install Gateway-based Sentiment Analyzer Helm Chart
       kubernetes.core.helm:
