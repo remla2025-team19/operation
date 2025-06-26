@@ -56,21 +56,6 @@ spec:
                   key: DB_PASSWORD
             - name: GCP_SECRET_PATH
               value: /secrets/remla_secret.json
-            - name: APP_VERSION
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Release.Name }}-app-config
-                  key: APP_VERSION
-            - name: MODEL_SERVICE_VERSION
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Release.Name }}-app-config
-                  key: MODEL_SERVICE_VERSION
-            - name: MODEL_VERSION
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ .Release.Name }}-app-config
-                  key: MODEL_VERSION
 
           volumeMounts:
             - name: gcp-secret
@@ -152,33 +137,6 @@ spec:
                   key: DB_PASSWORD
             - name: GCP_SECRET_PATH
               value: /secrets/remla_secret.json
-            - name: APP_VERSION
-              {{- if .app.image.tag }}
-              value: {{ .app.image.tag | quote }}
-              {{- else }}
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ $.Release.Name }}-app-config
-                  key: APP_VERSION
-              {{- end }}
-            - name: MODEL_SERVICE_VERSION
-              {{- if .model.image.tag }}
-              value: {{ .model.image.tag | quote }}
-              {{- else }}
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ $.Release.Name }}-app-config
-                  key: MODEL_SERVICE_VERSION
-              {{- end }}
-            - name: MODEL_VERSION
-              {{- if .model.config.version }}
-              value: {{ .model.config.version | quote }}
-              {{- else }}
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ $.Release.Name }}-app-config
-                  key: MODEL_VERSION
-              {{- end }}
 
           volumeMounts:
             - name: gcp-secret
@@ -226,9 +184,6 @@ data:
   LOG_LEVEL: {{ .Values.app.config.logLevel | quote}}
   MODEL_SERVICE_URL: "http://{{ .Release.Name }}-model:{{.Values.model.service.port}}"
   DB_USER: {{ .Values.app.config.dbUser | quote}}
-  APP_VERSION: {{ .Values.app.image.tag . | quote}}
-  MODEL_SERVICE_VERSION: {{ .Values.model.image.tag . | quote}}
-  MODEL_VERSION: {{ .Values.model.config.version . | quote}}
 ---
 apiVersion: v1
 kind: Secret
