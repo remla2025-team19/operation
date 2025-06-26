@@ -155,10 +155,9 @@ Approved PR: https://github.com/remla2025-team19/app-frontend/pull/3 (related to
 
 
 -- Manya: --
-Created PR: https://github.com/remla2025-team19/app-service/pull/5
-Created PR: https://github.com/remla2025-team19/app-frontend/pull/3
-Created PR: https://github.com/remla2025-team19/operation/pull/61
-
+Created PR: https://github.com/remla2025-team19/app-service/pull/5 (related to A1)
+Created PR: https://github.com/remla2025-team19/app-frontend/pull/3 (related to A1)
+Created PR: https://github.com/remla2025-team19/operation/pull/61 (related to A1) 
 Approved PR: https://github.com/remla2025-team19/operation/pull/64
 
 # Week 10:
@@ -177,3 +176,8 @@ Approved PR: https://github.com/remla2025-team19/operation/pull/60 (related to A
 Approved PR: https://github.com/remla2025-team19/operation/pull/67 (related to A5)
 Approved PR: https://github.com/remla2025-team19/operation/pull/65 (related to A2)
 Approved PR: https://github.com/remla2025-team19/model-service/pull/5 (related to A1)
+
+--Manya:--
+Created PR: https://github.com/remla2025-team19/model-training/pull/15 (related to A4)
+Approved PR: https://github.com/remla2025-team19/operation/pull/68 (related to A5)
+Approved PR: https://github.com/remla2025-team19/operation/pull/67 (related to A5) 
