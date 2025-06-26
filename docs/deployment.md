@@ -48,7 +48,10 @@ Services are deployed using Helm charts. The `sentiment-analyzer` Helm chart inc
 
 The helm chart can be installed multiple times, as seen in the following screenshot from the Kiali dashboard. It diplays an istio-based and ingress-based deployment side-by-side, as well as the rate limiting service.
 
-![kiali_dashboard](images/kiali_dashboard.jpeg)
+<div align="center">
+  <img src="images/kiali_dashboard.jpeg" alt="Kiali Dashboard" width="600"/>
+  <p><em>Figure 1: Kiali Dashboard</em></p>
+</div>
 
 ## Monitoring
 
@@ -80,31 +83,18 @@ We extended our deployment to support Istio-based routing. We defined:
 
 We support the Canary deployment routing. This means incoming requests are split using the 90/10 Split. 90% of requests are routed to `app-service` version `v1` and 10% to `v2`. This allows us to safely test experimental changes in the latter while maintaining uptime for most of the traffic on the former. Additionally, requests with the header `X-Experiment: canary` are always routed to v2.
 
-<<<<<<< HEAD
-=======
-<p align="center">
-  <img src="images/canary.png" alt="Canary Release Flow Diagram" width="600"/>
-</p>
-
->>>>>>> 0c69793 (Add summary of resources, kiali dashboard screenshot, and missing details)
 ## Sticky Sessions
 
-<<<<<<< HEAD
-# Overall Request Lifecycle
-
-<div align="center">
-  <img src="images/updated_request_flow.png" alt="Request Flow Diagram" width="600"/>
-  <p><em>Figure 1: Request flow diagram</em></p>
-</div>
-
-To summarise the process, the user initiates a request to the following domain: ```http://app.local```. This is manually mapped in /etc/hosts to the IP address of the Istio Ingress Gateway running on the controller node. This allows communication to and from the kubernetes cluster.
-=======
 We enable sticky sessions based on the X-user header to ensure a consistent experience. We configure Istio's `consistentHash` load balancer policy in the **DestinationRule** to route users with the same X-User header to the same service version consistently. This prevents version flipping for individual users during their session.
 
 ## Overall Request Lifecycle
 
+<div align="center">
+  <img src="images/updated_request_flow.png" alt="Request Flow Diagram" width="600"/>
+  <p><em>Figure 2: Request flow diagram</em></p>
+</div>
+
 To summarise the process, the user initiates a request to the following domain: `http://app.local`. This is manually mapped in /etc/hosts to the IP address (192.168.56.91) of the **Istio Ingress Gateway** LoadBalancer service running on the cluster.
->>>>>>> 0c69793 (Add summary of resources, kiali dashboard screenshot, and missing details)
 
 The Istio Gateway is configured to listen at port 80 and is the entryway to the service mesh.
 
@@ -117,7 +107,6 @@ Subsets `v1` and `v2` are defined by the **Destination Rule** which maps pod lab
 Once the requests are sent to their respective versions of `app-service` , the **model-service** is called via internal cluster networking. The **ConfigMap** provides the model service URL, and **Secrets** provide necessary credentials. Model artifacts are downloaded at runtime and cached in **HostPath volumes**.
 
 A prediction is returned back to the user's browser via the service mesh, with all traffic observable through Istio's built-in telemetry.
-
 
 ## Overview Deployed Resource Types and Relations
 
