@@ -31,7 +31,19 @@ Netflix's Chaos Engineering methodology systematically injects failures to under
 However, translating chaos experiment results into actionable alert rules remains a manual process requiring expert analysis. Netflix engineers must observe experiment outcomes, identify meaningful patterns, and craft corresponding monitoring rules - a process that could be automated through machine learning approaches.
 
 ## Proposed Solution
-(We make use of [[3]](#3) )
+We now propose implementing an Anomaly Detection Framework that automatically generates contextual Prometheus alert rules by analyzing historical system behaviour, chaos experiment results and failure patterns. We address the identified shortcomings through four integrated components:
+
+### 1. Historical Pattern Analysis Engine
+This component systematically analyzes our Istio service mesh metrics, application performance data and incident reports to identify recurring failure patterns [[3]](#3). It also specifically analyzes continuous experimentation data from canary deployments, extracting patterns that indicate when experiments are failing or succeeding. This creates experiment-aware alerting that can distinguish between normal A/B test variations and genuine system issues.
+
+### 2. Chaos-Informed Rule Generation
+Integrating with our Istio traffic management capabilities, this system uses controlled failure injection to understand normal recovery patterns. When traffic shifts during canary releases, the system learns expected behaviour patterns and generates rules tat can distinguish between planned traffic management and unplanned failures.
+
+### 3. Service Mesh-Aware Correlation
+This component understands our Istio service mesh topology and can correlate alerts across service boundaries. Using DestinationRules and VirtualServices configuration, it builds a dependency graph that enables intelligent alert correlation.
+
+### 4. Continuous Learning Integration
+The framework continuously learns from our continuous experimentation results, automatically adjusting alert sensitivity based on experimental contexts. During canary deployments, it temporarily adjusts thresholds to account for expected variations while maintaining sensitivity to genuine issues.
 
 
 ## References
