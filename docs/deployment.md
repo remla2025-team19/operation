@@ -73,6 +73,12 @@ We support the Canary deployment routing. This means incoming requests are split
 We enable sticky sessions based on the X-user header to ensure a consistent experience. We configure Istios ```consistentHash``` load balancer policy to help with the same. We are able to avoid version flipping because of the same.
 
 # Overall Request Lifecycle
+
+<div align="center">
+  <img src="images/updated_request_flow.png" alt="Request Flow Diagram" width="600"/>
+  <p><em>Figure 1: Request flow diagram</em></p>
+</div>
+
 To summarise the process, the user initiates a request to the following domain: ```http://app.local```. This is manually mapped in /etc/hosts to the IP address of the Istio Ingress Gateway running on the controller node. This allows communication to and from the kubernetes cluster.
 
 The Istio Gateway is configured to listen at port 80 and is the entryway to the service mesh.
@@ -85,7 +91,4 @@ Versions ```v1``` and ```v2``` are defined by the Destination Rule which corresp
 
 Once the requests are sent to their respective versions of ```app-service``` and then ```model-service```, a prediction is returned back to the users browser via the service mesh.
 
-<p align="center">
-  <img src="images/updated_request_flow.png" alt="Request Flow Diagram" width="600"/>
-</p>
 
