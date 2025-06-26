@@ -69,11 +69,6 @@ We extended our deployment to support Istio-based routing. We defined:
 ## Routing Modes
 We support the Canary deployment routing. This means incoming requests are split using the 90/10 Split. 90% of requests are routed to ```app-service``` version ```v1``` and 10% to ```v2```. This allows us to safely test experimental changes in the latter while maintaining uptime for most of the traffic on the former. Additionally, requests with the header 'X-Experiment: canary" are always routed to v2. 
 
-<p align="center">
-  <img src="images/canary.png" alt="Canary Release Flow Diagram" width="600"/>
-</p>
-
-
 ## Sticky Sessions
 We enable sticky sessions based on the X-user header to ensure a consistent experience. We configure Istios ```consistentHash``` load balancer policy to help with the same. We are able to avoid version flipping because of the same.
 
