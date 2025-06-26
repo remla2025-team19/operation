@@ -35,8 +35,6 @@ The Grafana dashboard provides real-time comparison of:
 - Error rate comparison
 - Traffic distribution verification
 
-![Experiment Dashboard](screenshots/experiment-metrics.png)
-
 ## Decision Process
 1. **Monitor for 7 days** to collect sufficient data
 2. **Analyze P95 response times** - accept if consistently ≤ 400ms
