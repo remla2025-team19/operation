@@ -10,7 +10,7 @@ model:
     port: 5001
     host: "0.0.0.0"
   config:
-    version: "v1.0.11"
+    version: "v1.0.12"
     predictionThreshold: 0.75
   resources:
     limits:
@@ -55,9 +55,10 @@ istio:
       weight: 10
       app:
         image:
-          tag: "latest"
+          tag: "v0.0.29"
       model:
-        predictionThreshold: 0.65
+        config:
+          predictionThreshold: 0.65
   baseWeight: 90 # weight of the stable release defined above (100-sum(additional_releases))
 
 storage:
