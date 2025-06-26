@@ -9,6 +9,11 @@ services:
         environment:
             - MODEL_SERVICE_URL=http://model:8080
             - APP_SECRET=${APP_SECRET}
+            - APP_VERSION=${APP_SERVICE_TAG}
+            - MODEL_SERVICE_VERSION=${MODEL_SERVICE_TAG}
+        env_file:
+            - .env
+            - .env.model
         restart: unless-stopped
     model:
         #TODO: update to the latest version when everything in model-service is merged
