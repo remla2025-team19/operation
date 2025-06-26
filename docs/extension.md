@@ -45,6 +45,33 @@ This component understands our Istio service mesh topology and can correlate ale
 ### 4. Continuous Learning Integration
 The framework continuously learns from our continuous experimentation results, automatically adjusting alert sensitivity based on experimental contexts. During canary deployments, it temporarily adjusts thresholds to account for expected variations while maintaining sensitivity to genuine issues.
 
+We highlight how these four components can work together with the Prometheus Server in the figure below.
+
+![Proposed Architecture](images/Proposed-Architecture.svg)
+
+## Experimental Design
+To verify the effectiveness of the proposed architecture, we can use a controlled A/B testing approach within our existing infrastructure.
+
+### 1. Baseline measurement
+Deploy current manual alerts alongside the new system for 30 days, measuring all metrics without acting on anomaly detection alerts
+
+### 2. Gradual Rollout
+Implement pattern-based alerts for 25% of services, comparing performance against manual alerts on remaining services.
+
+### 3. Chaos Engineering Validation
+Use controlled failure injection to test detection accuracy and response times.
+
+### 4. Continuous Experimentation Integration
+Validate the system correctly handles canary deployment scenarios without generating false alert.
+
+The experimental design can be conducted with the use of the following metrics
+
+| Metric | Description |
+| ----| ---- |
+| Mean Time to Detect | Compare detection speed between current manual alerts and pattern-based rules using historical incident data |
+| Alert Precision and Recall | False Positive Reduction & True Positive Coverage |
+| Investigation Time | Track time from alert to root cause identification |
+| Maintenance Overhead | Measure engineering hours spent on alert rule maintenance |
 
 ## References
 <a id="1">[1]</a>
