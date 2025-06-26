@@ -225,8 +225,8 @@ istioctl dashboard prometheus
 ```
 
 ## Documents
-A few diagrams may not display as intended in dark mode. For best readability, kindly view these documents in light mode. 
+⚠️ A few diagrams may not display as intended in dark mode. For best readability, kindly view these documents in light mode. 
 
 The docs folder contains project related documents for this assignment. 
-1. deployment.md: Describes the final deployment structure and is helpful in understanding overall request flow.
-2. extension.md: Proposes an improvement to our current setup, including experimental design. 
+1. Deployment.md: Describes the final deployment structure and is helpful in understanding overall request flow.
+2. Extension.md: Proposes an improvement to our current setup, including experimental design. 
