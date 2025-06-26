@@ -63,12 +63,6 @@ On running the `finalization.yaml` on the `ctrl` node [Step-2](#2-finalize-the-c
 192.168.56.91 app.local
 ```
 
-To install another instance for the same cluster, be sure the names are changes. For example,
-
-```bash
-helm install sentiment-analyzer-2 ./helm/sentiment-analyzer/ --set app.ingress.host=app2.local --set model.service.port=5002
-```
-
 All the requirements are met:
 
 -   [x] Helm chart `Chart.yaml` exists in `helm/sentiment-analyzer/`
@@ -100,8 +94,15 @@ Log in with the following default credentials:
 
 Click on the ```+``` on the top of the screen to ```import``` the ```helm/sentiment-analyzer/dashboard/dashboard.json``` file.
 
+Ensure the following is present in `/etc/hosts`
 
+```
+192.168.56.90 grafana.local
+```
 
+On accessing the `grafana.local`. The panels should be visible as below:
+
+![Grafana Dashboard](docs/images/Grafana-dashboard.jpeg)
 
 ## Assignment 5
 
@@ -199,10 +200,10 @@ kubectl get pods -l app=model -o jsonpath='{.items[*].status.containerStatuses[*
 3. Generate load for metrics testing
 ```bash
 # Make the script executable
-chmod +x scripts/generate-experiment-traffic.sh
+chmod +x generate-experiment-traffic.sh
 
 # Generate traffic for 5 minutes
-./scripts/generate-experiment-traffic.sh
+./generate-experiment-traffic.sh
 ```
 
 4. Check metrics are being collected
